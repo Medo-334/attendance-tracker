@@ -1,0 +1,27 @@
+{
+  "name": "متتبع الحضور والغياب",
+  "short_name": "الحضور والغياب",
+  "description": "تطبيق متابعة الحضور والانصراف والغياب والاستئذان والعمل الإضافي",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f7fb",
+  "theme_color": "#2563eb",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='42' fill='%232563eb'/><circle cx='96' cy='72' r='28' fill='%23ffffff'/><path d='M44 152c0-26 23-44 52-44s52 18 52 44' fill='%23ffffff'/><circle cx='144' cy='48' r='20' fill='%230d9488'/><path d='M136 48l6 6 10-12' stroke='%23ffffff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%232563eb'/><circle cx='256' cy='192' r='74' fill='%23ffffff'/><path d='M118 405c0-70 62-118 138-118s138 48 138 118' fill='%23ffffff'/><circle cx='384' cy='128' r='54' fill='%230d9488'/><path d='M362 128l16 16 28-32' stroke='%23ffffff' stroke-width='10' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

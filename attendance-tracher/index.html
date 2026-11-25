@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="theme-color" content="#2563eb" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<title>متتبع الحضور والغياب</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%232563eb'/><circle cx='90' cy='68' r='26' fill='%23ffffff'/><path d='M42 144c0-25 22-42 48-42s48 17 48 42' fill='%23ffffff'/><circle cx='136' cy='46' r='18' fill='%230d9488'/><path d='M129 46l5 5 9-11' stroke='%23ffffff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+<style>
+  :root {
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --accent: #0d9488;
+    --danger: #dc2626;
+    --soft-danger: #fef2f2;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --soft-blue: #eff6ff;
+    --soft-teal: #f0fdfa;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; font-family: "Segoe UI", Tahoma, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #eef4ff 0%, #f8fafc 55%, #ecfdf5 100%);
+    color: var(--text);
+    padding: 16px;
+  }
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  }
+  .header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+  .header h1 { margin: 0; font-size: 21px; color: var(--primary); }
+  .header p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .header-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--soft-blue);
+    color: var(--primary);
+  }
+  .stage-pill {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 720px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    body { padding: 10px; }
+    .container { padding: 16px; border-radius: 16px; }
+  }
+
+  .field { margin-bottom: 14px; position: relative; }
+  label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  input[type="password"], input[type="text"], textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    font-size: 14.5px;
+    background: #fff;
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[readonly] {
+    background: #f8fafc;
+    color: #475569;
+    cursor: not-allowed;
+    direction: ltr;
+    text-align: right;
+  }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+  }
+  textarea { min-height: 80px; resize: vertical; }
+
+  .custom-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 210px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.14);
+    z-index: 120;
+  }
+  .custom-menu.open { display: block; }
+  .menu-item {
+    padding: 10px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item:hover, .menu-item.active {
+    background: var(--soft-blue);
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .menu-empty { padding: 10px 12px; font-size: 13px; color: var(--muted); }
+
+  .mini-btn {
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+    background: var(--soft-blue);
+    color: var(--primary);
+  }
+
+  .time-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+  .time-box {
+    width: 68px !important;
+    text-align: center;
+    direction: ltr;
+    font-weight: 700;
+  }
+  .time-colon { font-weight: 700; color: var(--muted); }
+  .time-picker-wrap { position: relative; }
+  .time-list-popover {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    width: 170px;
+    max-height: 205px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.14);
+    z-index: 120;
+  }
+  .time-list-popover.open { display: block; }
+
+  .section-box {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 15px;
+    margin-bottom: 16px;
+    background: #fafcff;
+  }
+  .section-box.teal { background: var(--soft-teal); border-color: #99f6e4; }
+  .section-box.danger-box { background: var(--soft-danger); border-color: #fecaca; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .toggle-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer; flex-shrink: 0; }
+  .collapsible { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px dashed #cbd5e1; }
+  .collapsible.open { display: block; }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  button {
+    border: none;
+    border-radius: 11px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.2s;
+  }
+  @media (max-width: 600px) {
+    .actions button { flex: 1 1 auto; }
+  }
+  button:active { transform: scale(0.98); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-teal { background: var(--accent); color: #fff; }
+  .btn-outline { background: var(--soft-blue); color: var(--primary); border: 1px solid #bfdbfe; }
+  .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fca5a5; }
+  .btn-danger-active { background: var(--danger); color: #fff; border: 1px solid var(--danger); }
+
+  #status {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 11px;
+    font-size: 13.5px;
+    display: none;
+    line-height: 1.5;
+  }
+  .status-ok { display: block !important; background: #dcfce7; color: #166534; }
+  .status-err { display: block !important; background: #fee2e2; color: #991b1b; }
+  .locked { opacity: 0.55; pointer-events: none; }
+  .muted-section { opacity: 0.45; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>متتبع الحضور والغياب</h1>
+      <p>رفع الحضور أولاً للمتابعة، ثم استكمال الانصراف والعمل الإضافي في نهاية الدوام</p>
+    </div>
+    <div class="header-badges">
+      <span class="stage-pill" id="stagePill">الحالة: بانتظار التحقق</span>
+      <span class="badge" id="netBadge">متصل بالسحابة</span>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="field emp-wrap">
+      <label for="empSearch">اسم الموظف</label>
+      <input
+        type="text"
+        id="empSearch"
+        placeholder="جاري تحميل الأسماء..."
+        autocomplete="off"
+        onfocus="openEmpMenu()"
+        oninput="onEmpInput()"
+      />
+      <input type="hidden" id="employeeSelect" value="" />
+      <div id="empMenu" class="custom-menu"></div>
+    </div>
+
+    <div class="field">
+      <label for="pinInput">الرمز السري (PIN)</label>
+      <input type="password" id="pinInput" inputmode="numeric" placeholder="أدخل رمزك السري" />
+    </div>
+
+    <div class="field">
+      <label for="workDateDisplay">تاريخ اليوم (ثابت)</label>
+      <input
+        type="text"
+        id="workDateDisplay"
+        value=""
+        readonly
+        aria-readonly="true"
+        tabindex="-1"
+      />
+      <input type="hidden" id="workDate" value="" />
+    </div>
+  </div>
+
+  <div class="actions" style="margin-top: 0; margin-bottom: 18px;">
+    <button type="button" class="btn-outline" onclick="unlockAndLoad()">تحقق وتحميل السجل</button>
+  </div>
+
+  <div id="formBody" class="locked">
+    <div class="section-box danger-box">
+      <div class="toggle-row">
+        <span>هل الموظف غائب اليوم؟</span>
+        <button type="button" id="absentBtn" class="btn-danger-outline" onclick="toggleAbsentMode()">غياب</button>
+      </div>
+      <div id="absenceBox" class="collapsible">
+        <div class="field" style="margin-bottom:0;">
+          <label for="absenceReason">سبب الغياب</label>
+          <textarea id="absenceReason" placeholder="اكتب سبب الغياب (مثال: إجازة مرضية، ظرف عائلي، عذر مسبق...)"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div id="attendanceDetails">
+      <div class="section-box">
+        <div class="grid-2">
+          <div class="field time-picker-wrap" style="margin-bottom:0;">
+            <label>بداية الحضور</label>
+            <div class="time-row">
+              <input type="text" id="checkIn_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('checkIn')" />
+              <span class="time-colon">:</span>
+              <input type="text" id="checkIn_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('checkIn')" />
+              <button type="button" class="mini-btn" onclick="toggleTimeSlots('checkIn')">قائمة</button>
+            </div>
+            <input type="hidden" id="checkIn" value="" />
+            <div id="checkIn_slots" class="time-list-popover"></div>
+          </div>
+
+          <div class="field time-picker-wrap" style="margin-bottom:0;">
+            <label>موعد الانصراف (في نهاية الدوام)</label>
+            <div class="time-row">
+              <input type="text" id="checkOut_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('checkOut')" />
+              <span class="time-colon">:</span>
+              <input type="text" id="checkOut_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('checkOut')" />
+              <button type="button" class="mini-btn" onclick="toggleTimeSlots('checkOut')">قائمة</button>
+            </div>
+            <input type="hidden" id="checkOut" value="" />
+            <div id="checkOut_slots" class="time-list-popover"></div>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 14px;">
+          <button type="button" class="btn-primary" onclick="checkInNowAndUpload()">تسجيل حضور الآن ورفعه</button>
+          <button type="button" class="btn-outline" onclick="setNow('checkIn')">تحديد وقت الحضور الآن</button>
+          <button type="button" class="btn-outline" onclick="setNow('checkOut')">تحديد وقت الانصراف الآن</button>
+        </div>
+      </div>
+
+      <div class="section-box">
+        <div class="toggle-row">
+          <span>هل يوجد وقت استئذان في المنتصف؟</span>
+          <input type="checkbox" id="hasPermission" onchange="toggleBox('hasPermission', 'permBox')" />
+        </div>
+        <div id="permBox" class="collapsible">
+          <div class="grid-2">
+            <div class="field time-picker-wrap" style="margin-bottom:0;">
+              <label>من الساعة</label>
+              <div class="time-row">
+                <input type="text" id="permFrom_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('permFrom')" />
+                <span class="time-colon">:</span>
+                <input type="text" id="permFrom_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('permFrom')" />
+                <button type="button" class="mini-btn" onclick="toggleTimeSlots('permFrom')">قائمة</button>
+              </div>
+              <input type="hidden" id="permFrom" value="" />
+              <div id="permFrom_slots" class="time-list-popover"></div>
+            </div>
+
+            <div class="field time-picker-wrap" style="margin-bottom:0;">
+              <label>إلى الساعة</label>
+              <div class="time-row">
+                <input type="text" id="permTo_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('permTo')" />
+                <span class="time-colon">:</span>
+                <input type="text" id="permTo_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('permTo')" />
+                <button type="button" class="mini-btn" onclick="toggleTimeSlots('permTo')">قائمة</button>
+              </div>
+              <input type="hidden" id="permTo" value="" />
+              <div id="permTo_slots" class="time-list-popover"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-box teal">
+        <div class="toggle-row">
+          <span>هل تم أداء عمل إضافي؟</span>
+          <input type="checkbox" id="hasOvertime" onchange="toggleBox('hasOvertime', 'otBox')" />
+        </div>
+        <div id="otBox" class="collapsible">
+          <div class="grid-2">
+            <div class="field time-picker-wrap">
+              <label>وقت الإضافي من</label>
+              <div class="time-row">
+                <input type="text" id="otFrom_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('otFrom')" />
+                <span class="time-colon">:</span>
+                <input type="text" id="otFrom_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('otFrom')" />
+                <button type="button" class="mini-btn" onclick="toggleTimeSlots('otFrom')">قائمة</button>
+              </div>
+              <input type="hidden" id="otFrom" value="" />
+              <div id="otFrom_slots" class="time-list-popover"></div>
+            </div>
+
+            <div class="field time-picker-wrap">
+              <label>وقت الإضافي إلى</label>
+              <div class="time-row">
+                <input type="text" id="otTo_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('otTo')" />
+                <span class="time-colon">:</span>
+                <input type="text" id="otTo_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('otTo')" />
+                <button type="button" class="mini-btn" onclick="toggleTimeSlots('otTo')">قائمة</button>
+              </div>
+              <input type="hidden" id="otTo" value="" />
+              <div id="otTo_slots" class="time-list-popover"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="otReason">سبب العمل وقت إضافي</label>
+            <input type="text" id="otReason" placeholder="مثال: إغلاق حسابات نهاية الشهر أو ضغط تسليمات" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="taskDone">المهمة المنفذة</label>
+            <textarea id="taskDone" placeholder="اكتب ملخصاً واضحاً للمهمة التي تم إنجازها..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-primary" onclick="saveRecord(false)">حفظ / تحديث السجل</button>
+      <button type="button" id="quickCheckoutBtn" class="btn-teal" onclick="quickCheckoutAndSave()">تسجيل انصراف وحفظ</button>
+    </div>
+  </div>
+
+  <div id="status"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://idhaoooitmvwnkagpgzz.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_v0oaMQ9YTCRFLoe9dUKMdg_92VvsT05";
+
+  const HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+    "Prefer": "resolution=merge-duplicates,return=representation"
+  };
+
+  let verifiedEmployeeId = null;
+  let employeesCache = [];
+  let isAbsent = false;
+  let existingRecord = null;
+
+  const TIME_FIELDS = ["checkIn", "checkOut", "permFrom", "permTo", "otFrom", "otTo"];
+
+  function getLocalTodayStr() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function syncLockedTodayDate() {
+    const today = getLocalTodayStr();
+    document.getElementById("workDate").value = today;
+    document.getElementById("workDateDisplay").value = today;
+    return today;
+  }
+
+  function updateStageBadge(rec) {
+    const pill = document.getElementById("stagePill");
+    if (!verifiedEmployeeId) {
+      pill.textContent = "الحالة: بانتظار التحقق";
+      pill.style.background = "#f1f5f9";
+      pill.style.color = "#334155";
+      return;
+    }
+    if (rec && rec.is_absent) {
+      pill.textContent = "الحالة: غائب اليوم";
+      pill.style.background = "#fee2e2";
+      pill.style.color = "#991b1b";
+    } else if (rec && rec.check_in && !rec.check_out) {
+      pill.textContent = `الحالة: حاضر منذ ${rec.check_in.slice(0, 5)} (بانتظار الانصراف)`;
+      pill.style.background = "#fef9c3";
+      pill.style.color = "#854d0e";
+    } else if (rec && rec.check_in && rec.check_out) {
+      pill.textContent = `الحالة: مكتمل (${rec.check_in.slice(0, 5)} - ${rec.check_out.slice(0, 5)})`;
+      pill.style.background = "#dcfce7";
+      pill.style.color = "#166534";
+    } else {
+      pill.textContent = "الحالة: لم يُرفع حضور بعد";
+      pill.style.background = "#eff6ff";
+      pill.style.color = "#1d4ed8";
+    }
+  }
+
+  async function sbFetch(path, options = {}) {
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      ...options,
+      headers: { ...HEADERS, ...(options.headers || {}) }
+    });
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error(`HTTP ${resp.status}: ${errText}`);
+    }
+    const text = await resp.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  function applyAbsentState(absent) {
+    isAbsent = !!absent;
+    const btn = document.getElementById("absentBtn");
+    const box = document.getElementById("absenceBox");
+    const details = document.getElementById("attendanceDetails");
+    const checkoutBtn = document.getElementById("quickCheckoutBtn");
+
+    if (isAbsent) {
+      btn.className = "btn-danger-active";
+      btn.textContent = "تم تحديد: غياب";
+      box.classList.add("open");
+      details.classList.add("muted-section");
+      checkoutBtn.style.display = "none";
+
+      TIME_FIELDS.forEach(f => setTimeValue(f, ""));
+      ["otReason", "taskDone"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("hasPermission").checked = false;
+      document.getElementById("hasOvertime").checked = false;
+      toggleBox("hasPermission", "permBox");
+      toggleBox("hasOvertime", "otBox");
+    } else {
+      btn.className = "btn-danger-outline";
+      btn.textContent = "غياب";
+      box.classList.remove("open");
+      details.classList.remove("muted-section");
+      checkoutBtn.style.display = "";
+      document.getElementById("absenceReason").value = "";
+    }
+  }
+
+  function toggleAbsentMode() {
+    applyAbsentState(!isAbsent);
+  }
+
+  /* --- قائمة الموظفين --- */
+  function renderEmpMenu(items) {
+    const menu = document.getElementById("empMenu");
+    const selectedId = document.getElementById("employeeSelect").value;
+    menu.innerHTML = "";
+    if (!items.length) {
+      menu.innerHTML = '<div class="menu-empty">لا توجد أسماء مطابقة</div>';
+      return;
+    }
+    items.forEach(emp => {
+      const div = document.createElement("div");
+      div.className = "menu-item" + (emp.id === selectedId ? " active" : "");
+      div.textContent = emp.name;
+      div.onclick = () => {
+        document.getElementById("employeeSelect").value = emp.id;
+        document.getElementById("empSearch").value = emp.name;
+        menu.classList.remove("open");
+      };
+      menu.appendChild(div);
+    });
+  }
+
+  function openEmpMenu() {
+    if (!employeesCache.length) return;
+    renderEmpMenu(employeesCache);
+    document.getElementById("empMenu").classList.add("open");
+  }
+
+  function onEmpInput() {
+    document.getElementById("employeeSelect").value = "";
+    const q = document.getElementById("empSearch").value.trim().toLowerCase();
+    const filtered = q ? employeesCache.filter(e => e.name.toLowerCase().includes(q)) : employeesCache;
+    renderEmpMenu(filtered);
+    document.getElementById("empMenu").classList.add("open");
+  }
+
+  /* --- منتقي الوقت --- */
+  function buildTimeSlots() {
+    const slots = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 15) {
+        slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+      }
+    }
+    TIME_FIELDS.forEach(field => {
+      const container = document.getElementById(`${field}_slots`);
+      container.innerHTML = slots.map(t =>
+        `<div class="menu-item" style="direction:ltr; text-align:center;" onclick="pickTimeSlot('${field}', '${t}')">${t}</div>`
+      ).join("");
+    });
+  }
+
+  function pickTimeSlot(field, hhmm) {
+    const [hh, mm] = hhmm.split(":");
+    document.getElementById(`${field}_hh`).value = hh;
+    document.getElementById(`${field}_mm`).value = mm;
+    document.getElementById(field).value = hhmm;
+    document.getElementById(`${field}_slots`).classList.remove("open");
+  }
+
+  function toggleTimeSlots(field) {
+    const target = document.getElementById(`${field}_slots`);
+    const wasOpen = target.classList.contains("open");
+    closeAllPopovers();
+    if (!wasOpen) target.classList.add("open");
+  }
+
+  function syncTime(field) {
+    let hh = document.getElementById(`${field}_hh`).value.replace(/\D/g, "").slice(0, 2);
+    let mm = document.getElementById(`${field}_mm`).value.replace(/\D/g, "").slice(0, 2);
+    document.getElementById(`${field}_hh`).value = hh;
+    document.getElementById(`${field}_mm`).value = mm;
+
+    if (hh.length === 2 && mm.length === 2) {
+      const hNum = Math.min(23, Math.max(0, parseInt(hh, 10)));
+      const mNum = Math.min(59, Math.max(0, parseInt(mm, 10)));
+      document.getElementById(field).value = `${String(hNum).padStart(2, "0")}:${String(mNum).padStart(2, "0")}`;
+    } else if (!hh && !mm) {
+      document.getElementById(field).value = "";
+    }
+  }
+
+  function setTimeValue(field, hhmm) {
+    if (!hhmm) {
+      document.getElementById(`${field}_hh`).value = "";
+      document.getElementById(`${field}_mm`).value = "";
+      document.getElementById(field).value = "";
+      return;
+    }
+    const clean = hhmm.slice(0, 5);
+    const [hh, mm] = clean.split(":");
+    document.getElementById(`${field}_hh`).value = hh || "";
+    document.getElementById(`${field}_mm`).value = mm || "";
+    document.getElementById(field).value = clean;
+  }
+
+  function closeAllPopovers() {
+    document.getElementById("empMenu").classList.remove("open");
+    TIME_FIELDS.forEach(f => document.getElementById(`${f}_slots`).classList.remove("open"));
+  }
+
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".emp-wrap") && !e.target.closest(".time-picker-wrap")) {
+      closeAllPopovers();
+    }
+  });
+
+  function showStatus(msg, ok = true) {
+    const el = document.getElementById("status");
+    el.textContent = msg;
+    el.className = ok ? "status-ok" : "status-err";
+  }
+
+  function toggleBox(checkId, boxId) {
+    const checked = document.getElementById(checkId).checked;
+    document.getElementById(boxId).classList.toggle("open", checked);
+  }
+
+  function setNow(inputId) {
+    if (isAbsent) return;
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    setTimeValue(inputId, `${hh}:${mm}`);
+  }
+
+  function clearFormFields() {
+    TIME_FIELDS.forEach(f => setTimeValue(f, ""));
+    ["otReason", "taskDone", "absenceReason"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("hasPermission").checked = false;
+    document.getElementById("hasOvertime").checked = false;
+    toggleBox("hasPermission", "permBox");
+    toggleBox("hasOvertime", "otBox");
+    applyAbsentState(false);
+  }
+
+  function fillForm(rec) {
+    clearFormFields();
+    if (!rec) return;
+
+    if (rec.is_absent) {
+      applyAbsentState(true);
+      document.getElementById("absenceReason").value = rec.absence_reason || "";
+      return;
+    }
+
+    setTimeValue("checkIn", rec.check_in);
+    setTimeValue("checkOut", rec.check_out);
+
+    document.getElementById("hasPermission").checked = !!rec.has_permission;
+    toggleBox("hasPermission", "permBox");
+    setTimeValue("permFrom", rec.perm_from);
+    setTimeValue("permTo", rec.perm_to);
+
+    document.getElementById("hasOvertime").checked = !!rec.has_overtime;
+    toggleBox("hasOvertime", "otBox");
+    setTimeValue("otFrom", rec.ot_from);
+    setTimeValue("otTo", rec.ot_to);
+    document.getElementById("otReason").value = rec.ot_reason || "";
+    document.getElementById("taskDone").value = rec.task_done || "";
+  }
+
+  async function loadEmployees() {
+    const searchInput = document.getElementById("empSearch");
+    try {
+      const list = await sbFetch("employees?is_active=eq.true&select=id,name&order=name.asc");
+      if (!Array.isArray(list) || list.length === 0) {
+        searchInput.placeholder = "اختر اسمك...";
+        showStatus("تم الاتصال ولكن قائمة الموظفين فارغة.", false);
+        return;
+      }
+      employeesCache = list;
+      searchInput.placeholder = "اختر أو ابحث عن اسمك...";
+      renderEmpMenu(employeesCache);
+    } catch (err) {
+      searchInput.placeholder = "اختر اسمك...";
+      showStatus("تعذر تحميل قائمة الموظفين: " + err.message, false);
+    }
+  }
+
+  async function unlockAndLoad() {
+    let empId = document.getElementById("employeeSelect").value;
+    const typedName = document.getElementById("empSearch").value.trim();
+    if (!empId && typedName) {
+      const exact = employeesCache.find(e => e.name.trim() === typedName);
+      if (exact) {
+        empId = exact.id;
+        document.getElementById("employeeSelect").value = exact.id;
+      }
+    }
+
+    const pin = document.getElementById("pinInput").value.trim();
+    const workDate = syncLockedTodayDate();
+
+    if (!empId || !pin) {
+      showStatus("يرجى اختيار الاسم من القائمة وإدخال الرمز السري (PIN).", false);
+      return;
+    }
+
+    try {
+      const rows = await sbFetch(`employees?id=eq.${encodeURIComponent(empId)}&pin=eq.${encodeURIComponent(pin)}&select=id,name`);
+      if (!Array.isArray(rows) || rows.length === 0) {
+        verifiedEmployeeId = null;
+        existingRecord = null;
+        updateStageBadge(null);
+        document.getElementById("formBody").classList.add("locked");
+        showStatus("الرمز السري غير صحيح.", false);
+        return;
+      }
+
+      verifiedEmployeeId = empId;
+      document.getElementById("formBody").classList.remove("locked");
+      showStatus(`تم التحقق بنجاح (${rows[0].name}). جاري تحميل سجل اليوم (${workDate})...`, true);
+
+      const logs = await sbFetch(
+        `attendance_logs?employee_id=eq.${encodeURIComponent(empId)}&work_date=eq.${encodeURIComponent(workDate)}&select=*`
+      );
+      existingRecord = Array.isArray(logs) && logs.length > 0 ? logs[0] : null;
+      fillForm(existingRecord);
+      updateStageBadge(existingRecord);
+
+      if (!existingRecord) {
+        showStatus("لا يوجد سجل لليوم بعد؛ يمكنك تسجيل الحضور ورفعه الآن للمتابعة.", true);
+      } else if (existingRecord.check_in && !existingRecord.check_out && !existingRecord.is_absent) {
+        showStatus(`تم تحميل حضور اليوم (${existingRecord.check_in.slice(0, 5)}). يمكنك الآن إضافة وقت الانصراف أو الاستئذان أو العمل الإضافي.`, true);
+      } else {
+        showStatus("تم تحميل سجل اليوم؛ يمكنك التعديل والحفظ.", true);
+      }
+    } catch (err) {
+      showStatus("خطأ أثناء التحقق أو تحميل السجل: " + err.message, false);
+    }
+  }
+
+  async function checkInNowAndUpload() {
+    if (!verifiedEmployeeId) {
+      showStatus("يرجى التحقق من الرمز السري أولاً.", false);
+      return;
+    }
+    if (isAbsent) {
+      showStatus("أنت محدد كغائب اليوم؛ ألغِ وضع الغياب أولاً لتسجيل الحضور.", false);
+      return;
+    }
+    setNow("checkIn");
+    await saveRecord(true);
+  }
+
+  async function quickCheckoutAndSave() {
+    if (!verifiedEmployeeId) {
+      showStatus("يرجى التحقق من الرمز السري أولاً.", false);
+      return;
+    }
+    if (isAbsent) {
+      showStatus("الموظف محدد كغائب اليوم؛ اضغط على «حفظ / تحديث السجل» لحفظ الغياب وسببه.", false);
+      return;
+    }
+    setNow("checkOut");
+    await saveRecord(false);
+  }
+
+  async function saveRecord(isCheckInOnly = false) {
+    if (!verifiedEmployeeId) {
+      showStatus("يرجى التحقق من الرمز السري أولاً.", false);
+      return;
+    }
+
+    const workDateVal = syncLockedTodayDate();
+    const absenceReasonVal = document.getElementById("absenceReason").value.trim();
+
+    if (isAbsent && !absenceReasonVal) {
+      showStatus("يرجى كتابة سبب الغياب قبل الحفظ.", false);
+      document.getElementById("absenceReason").focus();
+      return;
+    }
+
+    const enteredCheckIn = document.getElementById("checkIn").value || null;
+    const prevCheckIn = existingRecord && !existingRecord.is_absent && existingRecord.check_in
+      ? existingRecord.check_in.slice(0, 5)
+      : null;
+    const finalCheckIn = enteredCheckIn || prevCheckIn;
+
+    if (!isAbsent && !finalCheckIn) {
+      showStatus("يرجى تحديد وقت بداية الحضور أو الضغط على «تسجيل حضور الآن ورفعه».", false);
+      return;
+    }
+
+    const payload = isAbsent
+      ? {
+          employee_id: verifiedEmployeeId,
+          work_date: workDateVal,
+          is_absent: true,
+          absence_reason: absenceReasonVal,
+          check_in: null,
+          check_out: null,
+          has_permission: false,
+          perm_from: null,
+          perm_to: null,
+          has_overtime: false,
+          ot_from: null,
+          ot_to: null,
+          ot_reason: null,
+          task_done: null,
+          updated_at: new Date().toISOString()
+        }
+      : {
+          employee_id: verifiedEmployeeId,
+          work_date: workDateVal,
+          is_absent: false,
+          absence_reason: null,
+          check_in: finalCheckIn,
+          check_out: isCheckInOnly
+            ? (existingRecord && existingRecord.check_out ? existingRecord.check_out.slice(0, 5) : null)
+            : (document.getElementById("checkOut").value || null),
+          has_permission: document.getElementById("hasPermission").checked,
+          perm_from: document.getElementById("permFrom").value || null,
+          perm_to: document.getElementById("permTo").value || null,
+          has_overtime: document.getElementById("hasOvertime").checked,
+          ot_from: document.getElementById("otFrom").value || null,
+          ot_to: document.getElementById("otTo").value || null,
+          ot_reason: document.getElementById("otReason").value.trim() || null,
+          task_done: document.getElementById("taskDone").value.trim() || null,
+          updated_at: new Date().toISOString()
+        };
+
+    try {
+      const savedRows = await sbFetch("attendance_logs?on_conflict=employee_id,work_date", {
+        method: "POST",
+        headers: {
+          "Prefer": "resolution=merge-duplicates,return=representation"
+        },
+        body: JSON.stringify(payload)
+      });
+      existingRecord = Array.isArray(savedRows) && savedRows.length > 0 ? savedRows[0] : payload;
+      fillForm(existingRecord);
+      updateStageBadge(existingRecord);
+
+      if (isAbsent) {
+        showStatus("تم رفع الغياب وسببه إلى السيرفر بنجاح.", true);
+      } else if (isCheckInOnly) {
+        showStatus(`تم رفع حضورك (${finalCheckIn}) إلى السيرفر بنجاح؛ يمكنك إضافة الانصراف أو أي تفاصيل أخرى عند نهاية الدوام.`, true);
+      } else {
+        showStatus("تم حفظ وتحديث جميع بيانات السجل على السيرفر بنجاح.", true);
+      }
+    } catch (err) {
+      showStatus("حدث خطأ أثناء الحفظ: " + err.message, false);
+    }
+  }
+
+  function updateNetworkBadge() {
+    const badge = document.getElementById("netBadge");
+    if (navigator.onLine) {
+      badge.textContent = "متصل بالسحابة";
+      badge.style.background = "#eff6ff";
+      badge.style.color = "#2563eb";
+    } else {
+      badge.textContent = "غير متصل بالإنترنت";
+      badge.style.background = "#fee2e2";
+      badge.style.color = "#991b1b";
+    }
+  }
+
+  window.addEventListener("online", updateNetworkBadge);
+  window.addEventListener("offline", updateNetworkBadge);
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
+
+  buildTimeSlots();
+  syncLockedTodayDate();
+  updateStageBadge(null);
+  updateNetworkBadge();
+  loadEmployees();
+</script>
+</body>
+</html>
