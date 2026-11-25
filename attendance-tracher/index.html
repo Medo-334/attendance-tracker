@@ -273,6 +273,7 @@
     <div class="header-badges">
       <span class="stage-pill" id="stagePill">الحالة: بانتظار التحقق</span>
       <span class="badge" id="netBadge">متصل بالسحابة</span>
+      <button type="button" class="warn-btn" id="headerNotifyBtn" onclick="subscribeEmployeeToPush()">تفعيل تنبيهات الجهاز</button>
     </div>
   </div>
 
@@ -526,17 +527,23 @@ function urlBase64ToUint8Array(base64String) {
 
   function updateNotifyButtonLabel() {
     const btn = document.getElementById("notifyBtn");
+    const headerBtn = document.getElementById("headerNotifyBtn");
+
     if (!("Notification" in window)) {
-      btn.style.display = "none";
+      if (btn) btn.style.display = "none";
+      if (headerBtn) headerBtn.style.display = "none";
       return;
     }
+
+    let label = "تفعيل تنبيهات الجهاز";
     if (Notification.permission === "granted") {
-      btn.textContent = "تنبيهات الجهاز مفعّلة ✓";
+      label = "تنبيهات الجهاز مفعّلة ✓";
     } else if (Notification.permission === "denied") {
-      btn.textContent = "التنبيهات محظورة من المتصفح";
-    } else {
-      btn.textContent = "تفعيل تنبيهات الجهاز";
+      label = "التنبيهات محظورة من المتصفح";
     }
+
+    if (btn) btn.textContent = label;
+    if (headerBtn) headerBtn.textContent = label;
   }
 
   async function requestNotificationPermission() {
