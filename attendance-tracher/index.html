@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#2563eb" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%232563eb'/><circle cx='90' cy='68' r='26' fill='%23ffffff'/><path d='M42 144c0-25 22-42 48-42s48 17 48 42' fill='%23ffffff'/><circle cx='136' cy='46' r='18' fill='%230d9488'/><path d='M129 46l5 5 9-11' stroke='%23ffffff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
 <title>متتبع الحضور والغياب</title>
 <link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%232563eb'/><circle cx='90' cy='68' r='26' fill='%23ffffff'/><path d='M42 144c0-25 22-42 48-42s48 17 48 42' fill='%23ffffff'/><circle cx='136' cy='46' r='18' fill='%230d9488'/><path d='M129 46l5 5 9-11' stroke='%23ffffff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
 <style>
   :root {
     --bg: #f4f7fb;
@@ -18,6 +18,8 @@
     --accent: #0d9488;
     --danger: #dc2626;
     --soft-danger: #fef2f2;
+    --warn: #d97706;
+    --soft-warn: #fffbeb;
     --text: #0f172a;
     --muted: #64748b;
     --border: #e2e8f0;
@@ -73,6 +75,27 @@
     color: #334155;
   }
 
+  .reminder-banner {
+    display: none;
+    background: var(--soft-warn);
+    border: 1px solid #fcd34d;
+    color: #92400e;
+    border-radius: 14px;
+    padding: 13px 15px;
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .reminder-banner.show { display: block; }
+  .reminder-top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .reminder-title { font-weight: 700; font-size: 14px; color: #78350f; }
+
   .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   @media (max-width: 720px) {
@@ -83,6 +106,7 @@
 
   .field { margin-bottom: 14px; position: relative; }
   label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+  .hint { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
   input[type="password"], input[type="text"], textarea {
     width: 100%;
     padding: 11px 12px;
@@ -105,7 +129,7 @@
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
   }
-  textarea { min-height: 80px; resize: vertical; }
+  textarea { min-height: 82px; resize: vertical; }
 
   .custom-menu {
     display: none;
@@ -142,6 +166,14 @@
     border-radius: 8px !important;
     background: var(--soft-blue);
     color: var(--primary);
+  }
+  .warn-btn {
+    padding: 6px 11px !important;
+    font-size: 12px !important;
+    border-radius: 8px !important;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
   }
 
   .time-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
@@ -236,12 +268,20 @@
   <div class="header">
     <div>
       <h1>متتبع الحضور والغياب</h1>
-      <p>رفع الحضور أولاً للمتابعة، ثم استكمال الانصراف والعمل الإضافي في نهاية الدوام</p>
+      <p>رفع الحضور أولاً للمتابعة، ثم استكمال الانصراف وملخص التقرير اليومي والعمل الإضافي</p>
     </div>
     <div class="header-badges">
       <span class="stage-pill" id="stagePill">الحالة: بانتظار التحقق</span>
       <span class="badge" id="netBadge">متصل بالسحابة</span>
     </div>
+  </div>
+
+  <div id="reminderBanner" class="reminder-banner">
+    <div class="reminder-top">
+      <span class="reminder-title" id="reminderTitle">تذكير بعد الساعة 6:00 مساءً</span>
+      <button type="button" class="warn-btn" id="notifyBtn" onclick="requestNotificationPermission()">تفعيل تنبيهات الجهاز</button>
+    </div>
+    <div id="reminderText" style="margin-top: 6px;"></div>
   </div>
 
   <div class="grid-3">
@@ -332,13 +372,23 @@
       </div>
 
       <div class="section-box">
+        <label for="dailySummary">ملخص التقرير اليومي</label>
+        <span class="hint">اكتب ملخصاً واضحاً لما تم إنجازه خلال دوام اليوم والملفات أو المهام التي تم العمل عليها.</span>
+        <textarea
+          id="dailySummary"
+          placeholder="مثال: مراجعة قيود اليومية، مطابقة الحسابات البنكية، وتحديث ملفات العملاء..."
+          oninput="evaluateEveningReminder(false)"
+        ></textarea>
+      </div>
+
+      <div class="section-box">
         <div class="toggle-row">
           <span>هل يوجد وقت استئذان في المنتصف؟</span>
           <input type="checkbox" id="hasPermission" onchange="toggleBox('hasPermission', 'permBox')" />
         </div>
         <div id="permBox" class="collapsible">
           <div class="grid-2">
-            <div class="field time-picker-wrap" style="margin-bottom:0;">
+            <div class="field time-picker-wrap">
               <label>من الساعة</label>
               <div class="time-row">
                 <input type="text" id="permFrom_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('permFrom')" />
@@ -350,7 +400,7 @@
               <div id="permFrom_slots" class="time-list-popover"></div>
             </div>
 
-            <div class="field time-picker-wrap" style="margin-bottom:0;">
+            <div class="field time-picker-wrap">
               <label>إلى الساعة</label>
               <div class="time-row">
                 <input type="text" id="permTo_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('permTo')" />
@@ -361,6 +411,11 @@
               <input type="hidden" id="permTo" value="" />
               <div id="permTo_slots" class="time-list-popover"></div>
             </div>
+          </div>
+
+          <div class="field" style="margin-bottom:0;">
+            <label for="permReason">سبب الاستئذان</label>
+            <input type="text" id="permReason" placeholder="مثال: مراجعة طبية، إنهاء معاملة شخصية، ظرف طارئ..." />
           </div>
         </div>
       </div>
@@ -393,7 +448,7 @@
                 <button type="button" class="mini-btn" onclick="toggleTimeSlots('otTo')">قائمة</button>
               </div>
               <input type="hidden" id="otTo" value="" />
-              <div id="otTo_slots" class="time-list-popover"></div>
+              <div id="otFrom_slots" class="time-list-popover"></div>
             </div>
           </div>
 
@@ -402,8 +457,8 @@
             <input type="text" id="otReason" placeholder="مثال: إغلاق حسابات نهاية الشهر أو ضغط تسليمات" />
           </div>
           <div class="field" style="margin-bottom:0;">
-            <label for="taskDone">المهمة المنفذة</label>
-            <textarea id="taskDone" placeholder="اكتب ملخصاً واضحاً للمهمة التي تم إنجازها..."></textarea>
+            <label for="taskDone">المهمة المنفذة في الوقت الإضافي</label>
+            <textarea id="taskDone" placeholder="اكتب ملخصاً واضحاً للمهمة الإضافية التي تم إنجازها..."></textarea>
           </div>
         </div>
       </div>
@@ -421,6 +476,7 @@
 <script>
   const SUPABASE_URL = "https://idhaoooitmvwnkagpgzz.supabase.co";
   const SUPABASE_KEY = "sb_publishable_v0oaMQ9YTCRFLoe9dUKMdg_92VvsT05";
+  const REMINDER_START_HOUR = 18; // 6:00 PM
 
   const HEADERS = {
     "apikey": SUPABASE_KEY,
@@ -433,6 +489,7 @@
   let employeesCache = [];
   let isAbsent = false;
   let existingRecord = null;
+  let lastReminderKey = null;
 
   const TIME_FIELDS = ["checkIn", "checkOut", "permFrom", "permTo", "otFrom", "otTo"];
 
@@ -449,6 +506,75 @@
     document.getElementById("workDate").value = today;
     document.getElementById("workDateDisplay").value = today;
     return today;
+  }
+
+  /* --- نظام التذكير كل ساعة بعد الساعة 6 مساءً --- */
+  function isReportPendingToday() {
+    if (existingRecord && existingRecord.is_absent) return false;
+    const hasCheckout = !!(document.getElementById("checkOut").value || (existingRecord && existingRecord.check_out));
+    const hasSummary = !!(document.getElementById("dailySummary").value.trim() || (existingRecord && existingRecord.daily_summary));
+    return !(hasCheckout && hasSummary);
+  }
+
+  function updateNotifyButtonLabel() {
+    const btn = document.getElementById("notifyBtn");
+    if (!("Notification" in window)) {
+      btn.style.display = "none";
+      return;
+    }
+    if (Notification.permission === "granted") {
+      btn.textContent = "تنبيهات الجهاز مفعّلة ✓";
+    } else if (Notification.permission === "denied") {
+      btn.textContent = "التنبيهات محظورة من المتصفح";
+    } else {
+      btn.textContent = "تفعيل تنبيهات الجهاز";
+    }
+  }
+
+  async function requestNotificationPermission() {
+    if (!("Notification" in window)) return;
+    try {
+      await Notification.requestPermission();
+    } catch (_) {}
+    updateNotifyButtonLabel();
+    evaluateEveningReminder(true);
+  }
+
+  function sendBrowserReminder(message) {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "granted") {
+      try {
+        new Notification("تذكير إتمام ملخص التقرير اليومي", {
+          body: message,
+          tag: "evening-report-reminder"
+        });
+      } catch (_) {}
+    }
+  }
+
+  function evaluateEveningReminder(forceTrigger = false) {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const banner = document.getElementById("reminderBanner");
+    const titleEl = document.getElementById("reminderTitle");
+    const textEl = document.getElementById("reminderText");
+
+    if (currentHour < REMINDER_START_HOUR || !isReportPendingToday()) {
+      banner.classList.remove("show");
+      return;
+    }
+
+    const slotKey = `${getLocalTodayStr()}_${currentHour}`;
+    const msg = "الساعة تجاوزت 6:00 مساءً؛ يُرجى استكمال تسجيل الانصراف وكتابة ملخص التقرير اليومي ورفع السجل على السيرفر.";
+
+    titleEl.textContent = `تذكير دوري (كل ساعة بعد 6:00 مساءً) — الساعة ${String(currentHour).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    textEl.textContent = msg;
+    banner.classList.add("show");
+
+    if (forceTrigger || lastReminderKey !== slotKey) {
+      lastReminderKey = slotKey;
+      sendBrowserReminder(msg);
+    }
   }
 
   function updateStageBadge(rec) {
@@ -506,7 +632,7 @@
       checkoutBtn.style.display = "none";
 
       TIME_FIELDS.forEach(f => setTimeValue(f, ""));
-      ["otReason", "taskDone"].forEach(id => document.getElementById(id).value = "");
+      ["dailySummary", "permReason", "otReason", "taskDone"].forEach(id => document.getElementById(id).value = "");
       document.getElementById("hasPermission").checked = false;
       document.getElementById("hasOvertime").checked = false;
       toggleBox("hasPermission", "permBox");
@@ -519,6 +645,7 @@
       checkoutBtn.style.display = "";
       document.getElementById("absenceReason").value = "";
     }
+    evaluateEveningReminder(false);
   }
 
   function toggleAbsentMode() {
@@ -571,6 +698,7 @@
     }
     TIME_FIELDS.forEach(field => {
       const container = document.getElementById(`${field}_slots`);
+      if (!container) return;
       container.innerHTML = slots.map(t =>
         `<div class="menu-item" style="direction:ltr; text-align:center;" onclick="pickTimeSlot('${field}', '${t}')">${t}</div>`
       ).join("");
@@ -583,10 +711,12 @@
     document.getElementById(`${field}_mm`).value = mm;
     document.getElementById(field).value = hhmm;
     document.getElementById(`${field}_slots`).classList.remove("open");
+    evaluateEveningReminder(false);
   }
 
   function toggleTimeSlots(field) {
     const target = document.getElementById(`${field}_slots`);
+    if (!target) return;
     const wasOpen = target.classList.contains("open");
     closeAllPopovers();
     if (!wasOpen) target.classList.add("open");
@@ -605,6 +735,7 @@
     } else if (!hh && !mm) {
       document.getElementById(field).value = "";
     }
+    evaluateEveningReminder(false);
   }
 
   function setTimeValue(field, hhmm) {
@@ -623,7 +754,10 @@
 
   function closeAllPopovers() {
     document.getElementById("empMenu").classList.remove("open");
-    TIME_FIELDS.forEach(f => document.getElementById(`${f}_slots`).classList.remove("open"));
+    TIME_FIELDS.forEach(f => {
+      const el = document.getElementById(`${f}_slots`);
+      if (el) el.classList.remove("open");
+    });
   }
 
   document.addEventListener("click", function (e) {
@@ -649,11 +783,12 @@
     const hh = String(now.getHours()).padStart(2, "0");
     const mm = String(now.getMinutes()).padStart(2, "0");
     setTimeValue(inputId, `${hh}:${mm}`);
+    evaluateEveningReminder(false);
   }
 
   function clearFormFields() {
     TIME_FIELDS.forEach(f => setTimeValue(f, ""));
-    ["otReason", "taskDone", "absenceReason"].forEach(id => document.getElementById(id).value = "");
+    ["dailySummary", "permReason", "otReason", "taskDone", "absenceReason"].forEach(id => document.getElementById(id).value = "");
     document.getElementById("hasPermission").checked = false;
     document.getElementById("hasOvertime").checked = false;
     toggleBox("hasPermission", "permBox");
@@ -673,11 +808,13 @@
 
     setTimeValue("checkIn", rec.check_in);
     setTimeValue("checkOut", rec.check_out);
+    document.getElementById("dailySummary").value = rec.daily_summary || "";
 
     document.getElementById("hasPermission").checked = !!rec.has_permission;
     toggleBox("hasPermission", "permBox");
     setTimeValue("permFrom", rec.perm_from);
     setTimeValue("permTo", rec.perm_to);
+    document.getElementById("permReason").value = rec.perm_reason || "";
 
     document.getElementById("hasOvertime").checked = !!rec.has_overtime;
     toggleBox("hasOvertime", "otBox");
@@ -745,11 +882,12 @@
       existingRecord = Array.isArray(logs) && logs.length > 0 ? logs[0] : null;
       fillForm(existingRecord);
       updateStageBadge(existingRecord);
+      evaluateEveningReminder(false);
 
       if (!existingRecord) {
         showStatus("لا يوجد سجل لليوم بعد؛ يمكنك تسجيل الحضور ورفعه الآن للمتابعة.", true);
       } else if (existingRecord.check_in && !existingRecord.check_out && !existingRecord.is_absent) {
-        showStatus(`تم تحميل حضور اليوم (${existingRecord.check_in.slice(0, 5)}). يمكنك الآن إضافة وقت الانصراف أو الاستئذان أو العمل الإضافي.`, true);
+        showStatus(`تم تحميل حضور اليوم (${existingRecord.check_in.slice(0, 5)}). يمكنك الآن إضافة الانصراف وملخص التقرير اليومي.`, true);
       } else {
         showStatus("تم تحميل سجل اليوم؛ يمكنك التعديل والحفظ.", true);
       }
@@ -810,17 +948,21 @@
       return;
     }
 
+    const hasPerm = document.getElementById("hasPermission").checked;
+
     const payload = isAbsent
       ? {
           employee_id: verifiedEmployeeId,
           work_date: workDateVal,
           is_absent: true,
           absence_reason: absenceReasonVal,
+          daily_summary: null,
           check_in: null,
           check_out: null,
           has_permission: false,
           perm_from: null,
           perm_to: null,
+          perm_reason: null,
           has_overtime: false,
           ot_from: null,
           ot_to: null,
@@ -837,9 +979,11 @@
           check_out: isCheckInOnly
             ? (existingRecord && existingRecord.check_out ? existingRecord.check_out.slice(0, 5) : null)
             : (document.getElementById("checkOut").value || null),
-          has_permission: document.getElementById("hasPermission").checked,
-          perm_from: document.getElementById("permFrom").value || null,
-          perm_to: document.getElementById("permTo").value || null,
+          daily_summary: document.getElementById("dailySummary").value.trim() || null,
+          has_permission: hasPerm,
+          perm_from: hasPerm ? (document.getElementById("permFrom").value || null) : null,
+          perm_to: hasPerm ? (document.getElementById("permTo").value || null) : null,
+          perm_reason: hasPerm ? (document.getElementById("permReason").value.trim() || null) : null,
           has_overtime: document.getElementById("hasOvertime").checked,
           ot_from: document.getElementById("otFrom").value || null,
           ot_to: document.getElementById("otTo").value || null,
@@ -859,13 +1003,14 @@
       existingRecord = Array.isArray(savedRows) && savedRows.length > 0 ? savedRows[0] : payload;
       fillForm(existingRecord);
       updateStageBadge(existingRecord);
+      evaluateEveningReminder(false);
 
       if (isAbsent) {
         showStatus("تم رفع الغياب وسببه إلى السيرفر بنجاح.", true);
       } else if (isCheckInOnly) {
-        showStatus(`تم رفع حضورك (${finalCheckIn}) إلى السيرفر بنجاح؛ يمكنك إضافة الانصراف أو أي تفاصيل أخرى عند نهاية الدوام.`, true);
+        showStatus(`تم رفع حضورك (${finalCheckIn}) إلى السيرفر بنجاح؛ يمكنك إضافة الانصراف وملخص التقرير اليومي عند نهاية الدوام.`, true);
       } else {
-        showStatus("تم حفظ وتحديث جميع بيانات السجل على السيرفر بنجاح.", true);
+        showStatus("تم حفظ وتحديث جميع بيانات السجل وملخص التقرير اليومي على السيرفر بنجاح.", true);
       }
     } catch (err) {
       showStatus("حدث خطأ أثناء الحفظ: " + err.message, false);
@@ -898,7 +1043,10 @@
   syncLockedTodayDate();
   updateStageBadge(null);
   updateNetworkBadge();
+  updateNotifyButtonLabel();
   loadEmployees();
+  evaluateEveningReminder(false);
+  setInterval(() => evaluateEveningReminder(false), 60 * 1000);
 </script>
 </body>
 </html>
