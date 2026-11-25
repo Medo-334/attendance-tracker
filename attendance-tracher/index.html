@@ -436,7 +436,7 @@
                 <button type="button" class="mini-btn" onclick="toggleTimeSlots('otFrom')">قائمة</button>
               </div>
               <input type="hidden" id="otFrom" value="" />
-              <div id="otFrom_slots" class="time-list-popover"></div>
+              <div id="otTo_slots" class="time-list-popover"></div>
             </div>
 
             <div class="field time-picker-wrap">
@@ -475,14 +475,22 @@
 
 <script>
   const SUPABASE_URL = "https://idhaoooitmvwnkagpgzz.supabase.co";
+  const VAPID_PUBLIC_KEY = "BIj9WsWneiZOCaGBiRYOSL61nkO1_1vpAdbS1fgK8LUNKVkaEGAB_EDl_Vx78mTxdvhmAcnbsehAduFnsQXAyhQ"; // ضع مفتاحك العام الكامل هنا
   const SUPABASE_KEY = "sb_publishable_v0oaMQ9YTCRFLoe9dUKMdg_92VvsT05";
   const REMINDER_START_HOUR = 18; // 6:00 PM
 
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+}
   const HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": `Bearer ${SUPABASE_KEY}`,
     "Content-Type": "application/json",
     "Prefer": "resolution=merge-duplicates,return=representation"
+    
   };
 
   let verifiedEmployeeId = null;
@@ -1047,6 +1055,62 @@
   loadEmployees();
   evaluateEveningReminder(false);
   setInterval(() => evaluateEveningReminder(false), 60 * 1000);
+async function subscribeEmployeeToPush() {
+  // 1. التأكد من التحقق المسبق بالاسم والرمز السري
+  if (!verifiedEmployeeId) {
+    showStatus("يرجى اختيار اسمك وإدخال الرمز السري والضغط على (تحقق وتحميل السجل) أولاً.", false);
+    return;
+  }
+
+  // 2. التأكد من دعم المتصفح لـ Service Worker و PushManager
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    showStatus("المتصفح أو الجهاز لا يدعم إشعارات الخلفية.", false);
+    return;
+  }
+
+  // 3. طلب إذن الإشعارات من المستخدم
+  const permission = await Notification.requestPermission();
+  updateNotifyButtonLabel();
+  if (permission !== "granted") {
+    showStatus("لم يتم السماح بالإشعارات من الجهاز.", false);
+    return;
+  }
+
+  try {
+    // 4. الحصول على تسجيل Service Worker والاشتراك في خدمة الدفع
+    const registration = await navigator.serviceWorker.ready;
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    // 5. استخراج بيانات الاشتراك وحفظها (أو تحديثها) في جدول push_subscriptions
+    const subData = subscription.toJSON();
+    await sbFetch("push_subscriptions?on_conflict=employee_id,endpoint", {
+      method: "POST",
+      body: JSON.stringify({
+        employee_id: verifiedEmployeeId,
+        endpoint: subData.endpoint,
+        p256dh: subData.keys.p256dh,
+        auth: subData.keys.auth,
+        user_agent: navigator.userAgent,
+        is_active: true,
+        updated_at: new Date().toISOString()
+      })
+    });
+
+    showStatus("تم تفعيل تنبيهات الجهاز وربطها بحسابك بنجاح.", true);
+  } catch (err) {
+    showStatus("حدث خطأ أثناء حفظ اشتراك الإشعارات: " + err.message, false);
+  }
+}
+
+// ربط زر "تفعيل تنبيهات الجهاز" بالدالة
+document.getElementById("notifyBtn").onclick = subscribeEmployeeToPush;  
 </script>
 </body>
 </html>
