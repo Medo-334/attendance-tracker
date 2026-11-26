@@ -38,7 +38,7 @@
     padding: 16px;
   }
   .container {
-    max-width: 860px;
+    max-width: 900px;
     margin: 0 auto;
     background: var(--card);
     border: 1px solid var(--border);
@@ -113,8 +113,9 @@
   .welcome-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
 
   .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   @media (max-width: 720px) {
-    .grid-2 { grid-template-columns: 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
     body { padding: 10px; }
     .container { padding: 16px; border-radius: 16px; }
   }
@@ -122,7 +123,7 @@
   .field { margin-bottom: 14px; position: relative; }
   label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
   .hint { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  input[type="password"], input[type="text"], textarea {
+  input[type="password"], input[type="text"], input[type="date"], textarea {
     width: 100%;
     padding: 11px 12px;
     border: 1px solid var(--border);
@@ -138,34 +139,6 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
   }
   textarea { min-height: 82px; resize: vertical; }
-
-  .custom-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 0;
-    right: 0;
-    max-height: 210px;
-    overflow-y: auto;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.14);
-    z-index: 120;
-  }
-  .custom-menu.open { display: block; }
-  .menu-item {
-    padding: 10px 12px;
-    font-size: 14px;
-    cursor: pointer;
-    border-bottom: 1px solid #f1f5f9;
-  }
-  .menu-item:last-child { border-bottom: none; }
-  .menu-item:hover, .menu-item.active {
-    background: var(--soft-blue);
-    color: var(--primary);
-    font-weight: 700;
-  }
 
   .mini-btn {
     padding: 6px 10px !important;
@@ -183,8 +156,8 @@
     border: 1px solid #f59e0b;
   }
   .sm-btn {
-    padding: 8px 12px !important;
-    font-size: 12.5px !important;
+    padding: 7px 11px !important;
+    font-size: 12px !important;
     border-radius: 9px !important;
   }
 
@@ -212,6 +185,18 @@
     z-index: 120;
   }
   .time-list-popover.open { display: block; }
+  .menu-item {
+    padding: 10px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item:hover {
+    background: var(--soft-blue);
+    color: var(--primary);
+    font-weight: 700;
+  }
 
   .section-box {
     border: 1px solid var(--border);
@@ -222,6 +207,7 @@
   }
   .section-box.teal { background: var(--soft-teal); border-color: #99f6e4; }
   .section-box.danger-box { background: var(--soft-danger); border-color: #fecaca; }
+  .section-box.warn-box { background: var(--soft-warn); border-color: #fde68a; }
 
   .toggle-row {
     display: flex;
@@ -261,6 +247,19 @@
   .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fca5a5; }
   .btn-danger-active { background: var(--danger); color: #fff; border: 1px solid var(--danger); }
 
+  .leave-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #fcd34d;
+    border-radius: 11px;
+    padding: 10px 12px;
+    margin-top: 8px;
+  }
+
   .admin-summary-box {
     display: flex;
     flex-wrap: wrap;
@@ -273,6 +272,91 @@
     padding: 14px 16px;
     margin-bottom: 16px;
   }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 820px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .kpi-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 12px;
+    background: #fff;
+    text-align: center;
+  }
+  .kpi-num { font-size: 20px; font-weight: 800; margin-bottom: 2px; }
+  .kpi-label { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .filter-chip {
+    padding: 7px 12px !important;
+    font-size: 12.5px !important;
+    border-radius: 999px !important;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+  }
+  .filter-chip.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+
+  .live-list {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .live-item {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .live-item:hover {
+    border-color: #93c5fd;
+    background: #f8fbff;
+  }
+  .live-emp-name { font-weight: 700; font-size: 14.5px; color: var(--text); }
+  .live-emp-link-hint { font-size: 11.5px; color: var(--primary); font-weight: 700; margin-right: 6px; }
+  .live-emp-sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .status-pill {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill-not-checked { background: #fee2e2; color: #991b1b; }
+  .pill-pending-pm { background: #fef3c7; color: #92400e; }
+  .pill-active { background: #e0f2fe; color: #075985; }
+  .pill-done { background: #dcfce7; color: #166534; }
+  .pill-inactive { background: #f1f5f9; color: #475569; }
+
+  .section-heading {
+    font-size: 15.5px;
+    font-weight: 800;
+    margin: 20px 0 10px;
+    color: var(--text);
+  }
+
   .months-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -291,6 +375,63 @@
   .month-card-title { font-size: 16px; font-weight: 700; color: var(--primary); margin: 0 0 6px; }
   .month-card-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
   .month-card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .emp-mgmt-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+  }
+  .emp-mgmt-row:last-child { margin-bottom: 0; }
+  .emp-mgmt-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 300;
+  }
+  .modal-card {
+    width: 100%;
+    max-width: 560px;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    padding: 20px;
+    box-shadow: 0 20px 44px rgba(15, 23, 42, 0.22);
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+  }
+  .modal-title { font-size: 17px; font-weight: 800; color: var(--primary); margin: 0; }
+  .modal-sub { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .detail-block {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .detail-label { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+  .detail-val { font-size: 14px; color: var(--text); white-space: pre-wrap; line-height: 1.55; font-weight: 600; }
 
   .hidden { display: none !important; }
 
@@ -356,13 +497,8 @@
         </div>
       </div>
 
-      <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
-        <input type="checkbox" id="rememberMe" checked style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer;" />
-        <label for="rememberMe" style="margin: 0; cursor: pointer; font-weight: 600;">تذكر بيانات الدخول على هذا الجهاز</label>
-      </div>
-
-      <div class="actions" style="margin-top: 14px;">
-        <button type="button" class="btn-primary" id="loginBtn" onclick="handleLogin()">تسجيل الدخول</button>
+      <div class="actions" style="margin-top: 16px;">
+        <button type="button" class="btn-primary" id="loginBtn" onclick="handleLogin()">تسجيل الدخول والبدء</button>
       </div>
     </div>
   </div>
@@ -377,6 +513,35 @@
       <button type="button" class="btn-outline sm-btn" onclick="logout()">تسجيل خروج</button>
     </div>
     <input type="hidden" id="workDate" value="" />
+
+    <!-- قسم الإجازة متعددة الأيام (إرسال تلقائي لغياب الفترة) -->
+    <div class="section-box warn-box">
+      <div class="toggle-row">
+        <span>إجازة لعدة أيام (إرسال تلقائي لغياب الفترة)</span>
+        <input type="checkbox" id="hasMultiLeave" onchange="toggleBox('hasMultiLeave', 'multiLeaveBox')" />
+      </div>
+      <div id="multiLeaveBox" class="collapsible">
+        <span class="hint">حدّد بداية ونهاية الإجازة والسبب مرة واحدة؛ سيقوم البرنامج برفع سجل غياب لكل يوم داخل الفترة تلقائياً.</span>
+        <div class="grid-2">
+          <div class="field">
+            <label for="leaveStartDate">من تاريخ</label>
+            <input type="date" id="leaveStartDate" />
+          </div>
+          <div class="field">
+            <label for="leaveEndDate">إلى تاريخ</label>
+            <input type="date" id="leaveEndDate" />
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="leaveReason">سبب الإجازة</label>
+          <input type="text" id="leaveReason" placeholder="مثال: إجازة سنوية، سفر، ظرف عائلي..." />
+        </div>
+        <div class="actions" style="margin-top: 12px; margin-bottom: 6px;">
+          <button type="button" class="btn-teal sm-btn" id="saveMultiLeaveBtn" onclick="saveMultiDayLeave()">حفظ وتوليد غياب الفترة تلقائياً</button>
+        </div>
+      </div>
+      <div id="myLeavePeriodsList"></div>
+    </div>
 
     <div id="formBody">
       <div class="section-box danger-box">
@@ -532,7 +697,7 @@
     <div class="welcome-bar">
       <div>
         <div class="welcome-title" id="adminWelcomeText">لوحة متابعة المدير</div>
-        <div class="welcome-meta">تصدير تقارير الحضور والغياب بصيغة Excel وإدارة المساحة حسب الشهر</div>
+        <div class="welcome-meta" id="adminDateMeta">متابعة حضور اليوم وتصدير تقارير Excel وإدارة المساحة</div>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button type="button" class="btn-outline sm-btn" onclick="loadAdminData()">تحديث البيانات</button>
@@ -540,6 +705,41 @@
       </div>
     </div>
 
+    <div class="section-heading" style="margin-top:0;">متابعة اليوم اللحظية للموظفين (اضغط على أي موظف لعرض التفاصيل)</div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpiTotalEmps" style="color:var(--primary);">0</div>
+        <div class="kpi-label">الموظفون النشطون</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpiCheckedIn" style="color:var(--accent);">0</div>
+        <div class="kpi-label">أثبتوا الحضور</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpiNotCheckedIn" style="color:var(--danger);">0</div>
+        <div class="kpi-label">لم يثبتوا حضورهم</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpiPendingPm" style="color:var(--warn);">0</div>
+        <div class="kpi-label">معلّق بعد 6:00 م</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num" id="kpiCompleted" style="color:#15803d;">0</div>
+        <div class="kpi-label">مكتمل / غائب</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <button type="button" class="filter-chip active" data-filter="all" onclick="setAdminFilter('all', this)">الكل</button>
+      <button type="button" class="filter-chip" data-filter="not_checked_in" onclick="setAdminFilter('not_checked_in', this)">لم يثبت حضوره</button>
+      <button type="button" class="filter-chip" data-filter="pending_pm" onclick="setAdminFilter('pending_pm', this)">معلّق بعد 6:00 م</button>
+      <button type="button" class="filter-chip" data-filter="active_am" onclick="setAdminFilter('active_am', this)">حاضر الآن</button>
+      <button type="button" class="filter-chip" data-filter="completed" onclick="setAdminFilter('completed', this)">مكتمل / غائب</button>
+    </div>
+
+    <div id="liveEmployeesList" class="live-list"></div>
+
+    <div class="section-heading">التقارير الشهرية وإدارة المساحة (Excel)</div>
     <div class="admin-summary-box">
       <div>
         <div style="font-weight:700; font-size:14.5px;" id="adminTotalSummary">جاري تحميل ملخص السجلات...</div>
@@ -549,9 +749,45 @@
     </div>
 
     <div id="monthsGrid" class="months-grid"></div>
+
+    <div class="section-heading">إدارة الموظفين (إضافة / تغيير كلمة المرور / إيقاف / حذف)</div>
+    <div class="section-box">
+      <div class="grid-3">
+        <div class="field" style="margin-bottom:0;">
+          <label for="newEmpName">اسم الموظف</label>
+          <input type="text" id="newEmpName" placeholder="مثال: أحمد محمود" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="newEmpUsername">اسم المستخدم (Username)</label>
+          <input type="text" id="newEmpUsername" placeholder="مثال: ahmed.m" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="newEmpPassword">كلمة المرور (Password)</label>
+          <input type="text" id="newEmpPassword" placeholder="أدخل كلمة مرور" />
+        </div>
+      </div>
+      <div class="actions" style="margin-top: 12px; margin-bottom: 14px;">
+        <button type="button" class="btn-primary sm-btn" id="addEmpBtn" onclick="addEmployee()">إضافة موظف جديد</button>
+      </div>
+      <div id="employeesMgmtList"></div>
+    </div>
   </div>
 
   <div id="status"></div>
+</div>
+
+<!-- نافذة تفاصيل سجل الموظف لليوم -->
+<div id="empDetailModal" class="modal-backdrop hidden" onclick="if(event.target===this) closeEmpDetailModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h3 class="modal-title" id="detailModalTitle">تفاصيل سجل اليوم</h3>
+        <div class="modal-sub" id="detailModalSub">---</div>
+      </div>
+      <button type="button" class="btn-outline sm-btn" onclick="closeEmpDetailModal()">إغلاق</button>
+    </div>
+    <div id="detailModalBody"></div>
+  </div>
 </div>
 
 <script>
@@ -588,7 +824,12 @@
   let existingRecord = null;
   let lastReminderKey = null;
   let adminLogsCache = [];
+  let adminAllEmployeesList = [];
+  let adminActiveEmployeesList = [];
   let adminEmployeesMap = {};
+  let adminTodayStatusRows = [];
+  let currentAdminFilter = "all";
+  let myLeavePeriods = [];
 
   const TIME_FIELDS = ["checkIn", "checkOut", "permFrom", "permTo", "otFrom", "otTo"];
 
@@ -616,7 +857,6 @@
 
     document.getElementById("loginUsername").value = saved.username;
     document.getElementById("loginPassword").value = saved.password;
-    document.getElementById("rememberMe").checked = true;
     await handleLogin(true);
   }
 
@@ -635,12 +875,37 @@
     return `${y}-${m}-${d}`;
   }
 
+  function formatDateLocal(dateObj) {
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const d = String(dateObj.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  function parseDateLocal(dateStr) {
+    const [y, m, d] = String(dateStr).split("-").map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  }
+
+  function enumerateDatesInclusive(startStr, endStr) {
+    const dates = [];
+    const cur = parseDateLocal(startStr);
+    const end = parseDateLocal(endStr);
+    while (cur <= end) {
+      dates.push(formatDateLocal(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return dates;
+  }
+
   function syncLockedTodayDate() {
     const today = getLocalTodayStr();
     const workDateEl = document.getElementById("workDate");
     const welcomeDateEl = document.getElementById("welcomeDateText");
+    const adminDateEl = document.getElementById("adminDateMeta");
     if (workDateEl) workDateEl.value = today;
     if (welcomeDateEl) welcomeDateEl.textContent = `تاريخ اليوم: ${today}`;
+    if (adminDateEl) adminDateEl.textContent = `متابعة حضور اليوم (${today}) وتصدير تقارير Excel وإدارة المساحة`;
     return today;
   }
 
@@ -656,6 +921,14 @@
     el.className = "";
   }
 
+  function escapeHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   async function sbFetch(path, options = {}) {
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
       ...options,
@@ -667,6 +940,177 @@
     }
     const text = await resp.text();
     return text ? JSON.parse(text) : null;
+  }
+
+  /* --- إجازات متعددة الأيام (إرسال تلقائي) --- */
+  function buildAbsentPayload(employeeId, workDate, reason) {
+    return {
+      employee_id: employeeId,
+      work_date: workDate,
+      is_absent: true,
+      absence_reason: reason,
+      daily_summary: null,
+      check_in: null,
+      check_out: null,
+      has_permission: false,
+      perm_from: null,
+      perm_to: null,
+      perm_reason: null,
+      has_overtime: false,
+      ot_from: null,
+      ot_to: null,
+      ot_reason: null,
+      task_done: null,
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  async function upsertAbsentForDates(employeeId, datesArr, reason) {
+    if (!Array.isArray(datesArr) || datesArr.length === 0) return;
+    const payloads = datesArr.map(d => buildAbsentPayload(employeeId, d, reason));
+    await sbFetch("attendance_logs?on_conflict=employee_id,work_date", {
+      method: "POST",
+      headers: {
+        "Prefer": "resolution=merge-duplicates,return=representation"
+      },
+      body: JSON.stringify(payloads)
+    });
+  }
+
+  async function loadMyLeavePeriodsAndSyncToday() {
+    if (!currentUser || currentUser.role !== "employee") return;
+    const today = getLocalTodayStr();
+
+    try {
+      const rows = await sbFetch(
+        `leave_periods?employee_id=eq.${encodeURIComponent(currentUser.id)}&order=start_date.desc`
+      );
+      myLeavePeriods = Array.isArray(rows) ? rows : [];
+      renderMyLeavePeriods();
+
+      const activeTodayLeave = myLeavePeriods.find(lp => lp.start_date <= today && lp.end_date >= today);
+      if (activeTodayLeave) {
+        await upsertAbsentForDates(currentUser.id, [today], activeTodayLeave.reason);
+      }
+    } catch (_) {
+      // إذا لم يُنشأ جدول leave_periods بعد لا نكسر الدخول الأساسي
+    }
+  }
+
+  function renderMyLeavePeriods() {
+    const container = document.getElementById("myLeavePeriodsList");
+    if (!container) return;
+    if (!myLeavePeriods.length) {
+      container.innerHTML = "";
+      return;
+    }
+
+    container.innerHTML = myLeavePeriods.map(lp => `
+      <div class="leave-item">
+        <div>
+          <div class="live-emp-name">من ${escapeHtml(lp.start_date)} إلى ${escapeHtml(lp.end_date)}</div>
+          <div class="live-emp-sub">السبب: ${escapeHtml(lp.reason)}</div>
+        </div>
+        <button type="button" class="btn-danger-outline sm-btn" onclick="deleteLeavePeriod('${lp.id}')">إلغاء الفترة</button>
+      </div>
+    `).join("");
+  }
+
+  async function saveMultiDayLeave() {
+    if (!currentUser || currentUser.role !== "employee") return;
+
+    const startVal = document.getElementById("leaveStartDate").value;
+    const endVal = document.getElementById("leaveEndDate").value;
+    const reasonVal = document.getElementById("leaveReason").value.trim();
+
+    if (!startVal || !endVal) {
+      showStatus("يرجى تحديد تاريخ بداية الإجازة وتاريخ نهايتها.", false);
+      return;
+    }
+    if (endVal < startVal) {
+      showStatus("تاريخ نهاية الإجازة يجب أن يكون مساوياً أو بعد تاريخ البداية.", false);
+      return;
+    }
+    if (!reasonVal) {
+      showStatus("يرجى كتابة سبب الإجازة.", false);
+      return;
+    }
+
+    const datesList = enumerateDatesInclusive(startVal, endVal);
+    const btn = document.getElementById("saveMultiLeaveBtn");
+    btn.disabled = true;
+    btn.textContent = "جاري الحفظ والتوليد...";
+
+    try {
+      await sbFetch("leave_periods", {
+        method: "POST",
+        headers: {
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify({
+          employee_id: currentUser.id,
+          start_date: startVal,
+          end_date: endVal,
+          reason: reasonVal
+        })
+      });
+
+      await upsertAbsentForDates(currentUser.id, datesList, reasonVal);
+
+      const today = getLocalTodayStr();
+      if (datesList.includes(today)) {
+        const logs = await sbFetch(
+          `attendance_logs?employee_id=eq.${encodeURIComponent(currentUser.id)}&work_date=eq.${encodeURIComponent(today)}&select=*`
+        );
+        existingRecord = Array.isArray(logs) && logs.length > 0 ? logs[0] : null;
+        fillForm(existingRecord);
+        updateStageBadge(existingRecord);
+        evaluateEveningReminder(false);
+      }
+
+      document.getElementById("leaveStartDate").value = "";
+      document.getElementById("leaveEndDate").value = "";
+      document.getElementById("leaveReason").value = "";
+
+      await loadMyLeavePeriodsAndSyncToday();
+      showStatus(`تم حفظ فترة الإجازة (${startVal} إلى ${endVal}) ورفع سجل الغياب تلقائياً لـ ${datesList.length} يوم.`, true);
+    } catch (err) {
+      showStatus("تعذر حفظ فترة الإجازة (تأكد من إنشاء جدول leave_periods في Supabase): " + err.message, false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "حفظ وتوليد غياب الفترة تلقائياً";
+    }
+  }
+
+  async function deleteLeavePeriod(periodId) {
+    if (!confirm("هل تريد إلغاء هذه الفترة من قائمة الإجازات؟")) return;
+    try {
+      await sbFetch(`leave_periods?id=eq.${encodeURIComponent(periodId)}`, {
+        method: "DELETE"
+      });
+      await loadMyLeavePeriodsAndSyncToday();
+      showStatus("تم إلغاء فترة الإجازة.", true);
+    } catch (err) {
+      showStatus("تعذر إلغاء فترة الإجازة: " + err.message, false);
+    }
+  }
+
+  async function syncActiveLeavePeriodsForAllEmployees(todayStr) {
+    try {
+      const periods = await sbFetch(
+        `leave_periods?start_date=lte.${encodeURIComponent(todayStr)}&end_date=gte.${encodeURIComponent(todayStr)}`
+      );
+      if (!Array.isArray(periods) || periods.length === 0) return;
+
+      const payloads = periods.map(lp => buildAbsentPayload(lp.employee_id, todayStr, lp.reason));
+      await sbFetch("attendance_logs?on_conflict=employee_id,work_date", {
+        method: "POST",
+        headers: {
+          "Prefer": "resolution=merge-duplicates,return=representation"
+        },
+        body: JSON.stringify(payloads)
+      });
+    } catch (_) {}
   }
 
   /* --- نظام التذكير المسائي للموظف --- */
@@ -783,7 +1227,7 @@
     }
   }
 
-  /* --- تسجيل الدخول والخروج --- */
+  /* --- تسجيل الدخول واستئناف البدء --- */
   async function handleLogin(isAutoLogin = false) {
     const username = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value.trim();
@@ -797,7 +1241,7 @@
 
     const loginBtn = document.getElementById("loginBtn");
     loginBtn.disabled = true;
-    loginBtn.textContent = isAutoLogin ? "جاري الدخول التلقائي..." : "جاري التحقق...";
+    loginBtn.textContent = isAutoLogin ? "جاري استئناف الجلسة..." : "جاري التحقق...";
 
     try {
       const managers = await sbFetch(
@@ -805,11 +1249,7 @@
       );
 
       if (Array.isArray(managers) && managers.length > 0) {
-        if (document.getElementById("rememberMe").checked) {
-          saveUserSession({ username, password });
-        } else {
-          clearUserSession();
-        }
+        saveUserSession({ username, password });
 
         currentUser = {
           role: "manager",
@@ -821,11 +1261,11 @@
         document.getElementById("employeeView").classList.add("hidden");
         document.getElementById("adminView").classList.remove("hidden");
         document.getElementById("headerNotifyBtn").classList.add("hidden");
-        document.getElementById("headerSubtitle").textContent = "لوحة تحكم المدير — تقارير Excel وإدارة البيانات الشهرية";
+        document.getElementById("headerSubtitle").textContent = "لوحة تحكم المدير — متابعة اليوم وتقارير Excel وإدارة المساحة والموظفين";
         document.getElementById("adminWelcomeText").textContent = `مرحباً بك أ / ${currentUser.name}`;
         updateStageBadge(null);
         evaluateEveningReminder(false);
-        showStatus(`تم تسجيل دخول المدير (${currentUser.name}) بنجاح.`, true);
+        showStatus(`تم استئناف جلسة المدير (${currentUser.name}) بنجاح.`, true);
         await loadAdminData();
         return;
       }
@@ -835,11 +1275,7 @@
       );
 
       if (Array.isArray(employees) && employees.length > 0) {
-        if (document.getElementById("rememberMe").checked) {
-          saveUserSession({ username, password });
-        } else {
-          clearUserSession();
-        }
+        saveUserSession({ username, password });
 
         currentUser = {
           role: "employee",
@@ -855,6 +1291,8 @@
         document.getElementById("welcomeText").textContent = `أهلاً بك، ${currentUser.name}`;
         const today = syncLockedTodayDate();
 
+        await loadMyLeavePeriodsAndSyncToday();
+
         const logs = await sbFetch(
           `attendance_logs?employee_id=eq.${encodeURIComponent(currentUser.id)}&work_date=eq.${encodeURIComponent(today)}&select=*`
         );
@@ -866,7 +1304,9 @@
 
         if (!existingRecord) {
           showStatus(`مرحباً ${currentUser.name}؛ لا يوجد سجل لليوم (${today}) بعد، يمكنك تسجيل حضورك ورفعه الآن.`, true);
-        } else if (existingRecord.check_in && !existingRecord.check_out && !existingRecord.is_absent) {
+        } else if (existingRecord.is_absent) {
+          showStatus(`مرحباً ${currentUser.name}؛ مسجل لك غياب اليوم (${today})${existingRecord.absence_reason ? `: ${existingRecord.absence_reason}` : ""}.`, true);
+        } else if (existingRecord.check_in && !existingRecord.check_out) {
           showStatus(`مرحباً ${currentUser.name}؛ تم تحميل حضورك (${existingRecord.check_in.slice(0, 5)}). يمكنك الآن إضافة الانصراف وملخص التقرير اليومي.`, true);
         } else {
           showStatus(`مرحباً ${currentUser.name}؛ تم تحميل سجل اليوم (${today}).`, true);
@@ -877,23 +1317,28 @@
       if (isAutoLogin) {
         clearUserSession();
       }
-      showStatus("اسم المستخدم أو كلمة المرور غير صحيحة.", false);
+      showStatus("اسم المستخدم أو كلمة المرور غير صحيحة أو الحساب موقوف.", false);
     } catch (err) {
       if (!isAutoLogin) {
         showStatus("حدث خطأ أثناء تسجيل الدخول: " + err.message, false);
       }
     } finally {
       loginBtn.disabled = false;
-      loginBtn.textContent = "تسجيل الدخول";
+      loginBtn.textContent = "تسجيل الدخول والبدء";
     }
   }
 
   function logout() {
     clearUserSession();
+    closeEmpDetailModal();
     currentUser = null;
     existingRecord = null;
     adminLogsCache = [];
+    myLeavePeriods = [];
     clearFormFields();
+    document.getElementById("myLeavePeriodsList").innerHTML = "";
+    document.getElementById("hasMultiLeave").checked = false;
+    toggleBox("hasMultiLeave", "multiLeaveBox");
     document.getElementById("loginPassword").value = "";
     document.getElementById("employeeView").classList.add("hidden");
     document.getElementById("adminView").classList.add("hidden");
@@ -1118,25 +1563,7 @@
     const hasPerm = document.getElementById("hasPermission").checked;
 
     const payload = isAbsent
-      ? {
-          employee_id: currentUser.id,
-          work_date: workDateVal,
-          is_absent: true,
-          absence_reason: absenceReasonVal,
-          daily_summary: null,
-          check_in: null,
-          check_out: null,
-          has_permission: false,
-          perm_from: null,
-          perm_to: null,
-          perm_reason: null,
-          has_overtime: false,
-          ot_from: null,
-          ot_to: null,
-          ot_reason: null,
-          task_done: null,
-          updated_at: new Date().toISOString()
-        }
+      ? buildAbsentPayload(currentUser.id, workDateVal, absenceReasonVal)
       : {
           employee_id: currentUser.id,
           work_date: workDateVal,
@@ -1235,7 +1662,407 @@
 
   document.getElementById("notifyBtn").onclick = subscribeEmployeeToPush;
 
-  /* --- لوحة تحكم المدير وتصدير Excel --- */
+  /* --- متابعة اليوم اللحظية في صفحة المدير --- */
+  function classifyEmployeeToday(emp, todayRec, nowHour) {
+    if (!todayRec) {
+      return {
+        category: "not_checked_in",
+        badgeText: "لم يثبت حضوره",
+        badgeClass: "pill-not-checked",
+        checkedIn: false,
+        checkInStr: "--:--",
+        checkOutStr: "--:--",
+        reportStatus: "لم يُكتب بعد",
+        record: null
+      };
+    }
+
+    if (todayRec.is_absent) {
+      return {
+        category: "completed",
+        badgeText: "غائب",
+        badgeClass: "pill-done",
+        checkedIn: false,
+        checkInStr: "--:--",
+        checkOutStr: "--:--",
+        reportStatus: todayRec.absence_reason ? `سبب الغياب: ${todayRec.absence_reason}` : "غائب",
+        record: todayRec
+      };
+    }
+
+    const hasCheckIn = !!todayRec.check_in;
+    const hasCheckOut = !!todayRec.check_out;
+    const hasSummary = !!(todayRec.daily_summary && todayRec.daily_summary.trim());
+    const checkInStr = hasCheckIn ? todayRec.check_in.slice(0, 5) : "--:--";
+    const checkOutStr = hasCheckOut ? todayRec.check_out.slice(0, 5) : "--:--";
+    const reportStatus = hasSummary ? "تمت كتابة التقرير" : "لم يُكتب بعد";
+
+    if (!hasCheckIn) {
+      return {
+        category: "not_checked_in",
+        badgeText: "لم يثبت حضوره",
+        badgeClass: "pill-not-checked",
+        checkedIn: false,
+        checkInStr,
+        checkOutStr,
+        reportStatus,
+        record: todayRec
+      };
+    }
+
+    const isAfter6Pm = nowHour >= REMINDER_START_HOUR;
+    if (isAfter6Pm && (!hasCheckOut || !hasSummary)) {
+      const missingParts = [];
+      if (!hasCheckOut) missingParts.push("الانصراف");
+      if (!hasSummary) missingParts.push("تقرير المهام");
+      return {
+        category: "pending_pm",
+        badgeText: `معلّق بعد 6 م (${missingParts.join(" + ")})`,
+        badgeClass: "pill-pending-pm",
+        checkedIn: true,
+        checkInStr,
+        checkOutStr,
+        reportStatus,
+        record: todayRec
+      };
+    }
+
+    if (hasCheckOut && hasSummary) {
+      return {
+        category: "completed",
+        badgeText: "مكتمل",
+        badgeClass: "pill-done",
+        checkedIn: true,
+        checkInStr,
+        checkOutStr,
+        reportStatus,
+        record: todayRec
+      };
+    }
+
+    return {
+      category: "active_am",
+      badgeText: "حاضر الآن",
+      badgeClass: "pill-active",
+      checkedIn: true,
+      checkInStr,
+      checkOutStr,
+      reportStatus,
+      record: todayRec
+    };
+  }
+
+  function buildTodayStatusList() {
+    const today = getLocalTodayStr();
+    const nowHour = new Date().getHours();
+    const todayLogsByEmp = {};
+
+    adminLogsCache.forEach(rec => {
+      if (rec.work_date === today) {
+        todayLogsByEmp[rec.employee_id] = rec;
+      }
+    });
+
+    adminTodayStatusRows = adminActiveEmployeesList.map(emp => {
+      const info = classifyEmployeeToday(emp, todayLogsByEmp[emp.id], nowHour);
+      return {
+        id: emp.id,
+        name: emp.name,
+        ...info
+      };
+    });
+
+    const totalEmps = adminTodayStatusRows.length;
+    const checkedInCount = adminTodayStatusRows.filter(r => r.checkedIn).length;
+    const notCheckedInCount = adminTodayStatusRows.filter(r => r.category === "not_checked_in").length;
+    const pendingPmCount = adminTodayStatusRows.filter(r => r.category === "pending_pm").length;
+    const completedCount = adminTodayStatusRows.filter(r => r.category === "completed").length;
+
+    document.getElementById("kpiTotalEmps").textContent = totalEmps;
+    document.getElementById("kpiCheckedIn").textContent = checkedInCount;
+    document.getElementById("kpiNotCheckedIn").textContent = notCheckedInCount;
+    document.getElementById("kpiPendingPm").textContent = pendingPmCount;
+    document.getElementById("kpiCompleted").textContent = completedCount;
+
+    renderFilteredTodayList();
+  }
+
+  function setAdminFilter(filterKey, btnEl) {
+    currentAdminFilter = filterKey;
+    document.querySelectorAll(".filter-chip").forEach(chip => chip.classList.remove("active"));
+    if (btnEl) btnEl.classList.add("active");
+    renderFilteredTodayList();
+  }
+
+  function renderFilteredTodayList() {
+    const container = document.getElementById("liveEmployeesList");
+    const filtered = currentAdminFilter === "all"
+      ? adminTodayStatusRows
+      : adminTodayStatusRows.filter(r => r.category === currentAdminFilter);
+
+    if (!filtered.length) {
+      container.innerHTML = '<div class="section-box" style="text-align:center; margin-bottom:0;">لا يوجد موظفون ضمن هذا التصنيف حالياً.</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => `
+      <div class="live-item" onclick="openEmpDetailModal('${item.id}')">
+        <div>
+          <div class="live-emp-name">${escapeHtml(item.name)} <span class="live-emp-link-hint">← عرض التفاصيل</span></div>
+          <div class="live-emp-sub">الحضور: ${item.checkInStr} • الانصراف: ${item.checkOutStr} • التقرير: ${escapeHtml(item.reportStatus)}</div>
+        </div>
+        <span class="status-pill ${item.badgeClass}">${escapeHtml(item.badgeText)}</span>
+      </div>
+    `).join("");
+  }
+
+  function openEmpDetailModal(empId) {
+    const row = adminTodayStatusRows.find(r => r.id === empId);
+    if (!row) return;
+
+    const modal = document.getElementById("empDetailModal");
+    const titleEl = document.getElementById("detailModalTitle");
+    const subEl = document.getElementById("detailModalSub");
+    const bodyEl = document.getElementById("detailModalBody");
+
+    titleEl.textContent = row.name;
+    subEl.textContent = `التاريخ: ${getLocalTodayStr()} • الحالة الحالية: ${row.badgeText}`;
+
+    const rec = row.record;
+    if (!rec) {
+      bodyEl.innerHTML = `
+        <div class="detail-block">
+          <div class="detail-label">حالة السجل</div>
+          <div class="detail-val">لم يقم الموظف بتسجيل حضور أو غياب لهذا اليوم حتى الآن.</div>
+        </div>
+      `;
+      modal.classList.remove("hidden");
+      return;
+    }
+
+    if (rec.is_absent) {
+      bodyEl.innerHTML = `
+        <div class="detail-block">
+          <div class="detail-label">الحالة</div>
+          <div class="detail-val">غائب</div>
+        </div>
+        <div class="detail-block">
+          <div class="detail-label">سبب الغياب</div>
+          <div class="detail-val">${escapeHtml(rec.absence_reason || "لم يُذكر سبب الغياب")}</div>
+        </div>
+      `;
+      modal.classList.remove("hidden");
+      return;
+    }
+
+    const checkIn = rec.check_in ? rec.check_in.slice(0, 5) : "--:--";
+    const checkOut = rec.check_out ? rec.check_out.slice(0, 5) : "--:--";
+    const duration = calcWorkDuration(checkIn, checkOut, false) || "--:--";
+
+    let permHtml = `<div class="detail-val">لا يوجد استئذان</div>`;
+    if (rec.has_permission) {
+      const pFrom = rec.perm_from ? rec.perm_from.slice(0, 5) : "--:--";
+      const pTo = rec.perm_to ? rec.perm_to.slice(0, 5) : "--:--";
+      permHtml = `
+        <div class="detail-val">من ${pFrom} إلى ${pTo}${rec.perm_reason ? ` — السبب: ${escapeHtml(rec.perm_reason)}` : ""}</div>
+      `;
+    }
+
+    let otHtml = `<div class="detail-val">لا يوجد عمل إضافي</div>`;
+    if (rec.has_overtime) {
+      const oFrom = rec.ot_from ? rec.ot_from.slice(0, 5) : "--:--";
+      const oTo = rec.ot_to ? rec.ot_to.slice(0, 5) : "--:--";
+      otHtml = `
+        <div class="detail-val">من ${oFrom} إلى ${oTo}${rec.ot_reason ? ` — السبب: ${escapeHtml(rec.ot_reason)}` : ""}${rec.task_done ? `\nالمهمة الإضافية: ${escapeHtml(rec.task_done)}` : ""}</div>
+      `;
+    }
+
+    bodyEl.innerHTML = `
+      <div class="grid-2" style="gap:10px; margin-bottom:12px;">
+        <div class="detail-block" style="margin-bottom:0;">
+          <div class="detail-label">بداية الحضور</div>
+          <div class="detail-val">${checkIn}</div>
+        </div>
+        <div class="detail-block" style="margin-bottom:0;">
+          <div class="detail-label">موعد الانصراف (مدة الدوام: ${duration})</div>
+          <div class="detail-val">${checkOut}</div>
+        </div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-label">ملخص التقرير اليومي</div>
+        <div class="detail-val">${escapeHtml(rec.daily_summary && rec.daily_summary.trim() ? rec.daily_summary : "لم يُكتب ملخص التقرير اليومي بعد")}</div>
+      </div>
+      <div class="detail-block">
+        <div class="detail-label">الاستئذان</div>
+        ${permHtml}
+      </div>
+      <div class="detail-block" style="margin-bottom:0;">
+        <div class="detail-label">العمل الإضافي</div>
+        ${otHtml}
+      </div>
+    `;
+
+    modal.classList.remove("hidden");
+  }
+
+  function closeEmpDetailModal() {
+    document.getElementById("empDetailModal").classList.add("hidden");
+  }
+
+  /* --- إدارة الموظفين للمدير --- */
+  async function addEmployee() {
+    const nameEl = document.getElementById("newEmpName");
+    const userEl = document.getElementById("newEmpUsername");
+    const passEl = document.getElementById("newEmpPassword");
+
+    const name = nameEl.value.trim();
+    const username = userEl.value.trim();
+    const password = passEl.value.trim();
+
+    if (!name || !username || !password) {
+      showStatus("يرجى إدخال اسم الموظف واسم المستخدم وكلمة المرور.", false);
+      return;
+    }
+
+    const btn = document.getElementById("addEmpBtn");
+    btn.disabled = true;
+    btn.textContent = "جاري الإضافة...";
+
+    try {
+      await sbFetch("employees", {
+        method: "POST",
+        headers: {
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify({
+          name,
+          username,
+          password,
+          is_active: true
+        })
+      });
+
+      nameEl.value = "";
+      userEl.value = "";
+      passEl.value = "";
+      showStatus(`تمت إضافة الموظف (${name}) بنجاح.`, true);
+      await loadAdminData();
+    } catch (err) {
+      showStatus("تعذر إضافة الموظف (تأكد من عدم تكرار اسم المستخدم): " + err.message, false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "إضافة موظف جديد";
+    }
+  }
+
+  async function editEmployeePassword(empId) {
+    const emp = adminAllEmployeesList.find(e => e.id === empId);
+    if (!emp) return;
+
+    const nextPass = prompt(`أدخل كلمة المرور الجديدة للموظف (${emp.name}):`);
+    if (nextPass === null) return;
+    const trimmedPass = nextPass.trim();
+    if (!trimmedPass) {
+      showStatus("لا يمكن أن تكون كلمة المرور فارغة.", false);
+      return;
+    }
+
+    try {
+      await sbFetch(`employees?id=eq.${encodeURIComponent(empId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ password: trimmedPass })
+      });
+      showStatus(`تم تحديث كلمة مرور (${emp.name}) بنجاح.`, true);
+      await loadAdminData();
+    } catch (err) {
+      showStatus("تعذر تحديث كلمة المرور: " + err.message, false);
+    }
+  }
+
+  async function toggleEmployeeActive(empId, nextActive) {
+    const emp = adminAllEmployeesList.find(e => e.id === empId);
+    const label = emp ? emp.name : "الموظف";
+    const actionText = nextActive ? "تفعيل" : "إيقاف";
+
+    if (!confirm(`هل تريد ${actionText} حساب (${label})؟`)) return;
+
+    try {
+      await sbFetch(`employees?id=eq.${encodeURIComponent(empId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ is_active: !!nextActive })
+      });
+      showStatus(`تم ${actionText} حساب (${label}) بنجاح.`, true);
+      await loadAdminData();
+    } catch (err) {
+      showStatus("تعذر تحديث حالة الموظف: " + err.message, false);
+    }
+  }
+
+  async function deleteEmployeePermanently(empId) {
+    const emp = adminAllEmployeesList.find(e => e.id === empId);
+    if (!emp) return;
+
+    const ok1 = confirm(
+      `تحذير: سيتم حذف حساب الموظف (${emp.name}) نهائياً.\nملاحظة: إذا كانت له سجلات حضور مرتبطة في قاعدة البيانات فقد يتطلب الأمر حذف سجلاته أولاً أو الاكتفاء بإيقاف حسابه.`
+    );
+    if (!ok1) return;
+
+    const typed = prompt(`لتأكيد الحذف النهائي للموظف (${emp.name})، اكتب: حذف`);
+    if ((typed || "").trim() !== "حذف") {
+      showStatus("تم إلغاء الحذف لعدم مطابقة كلمة التأكيد.", false);
+      return;
+    }
+
+    try {
+      await sbFetch(`push_subscriptions?employee_id=eq.${encodeURIComponent(empId)}`, {
+        method: "DELETE"
+      }).catch(() => {});
+
+      await sbFetch(`employees?id=eq.${encodeURIComponent(empId)}`, {
+        method: "DELETE"
+      });
+
+      showStatus(`تم حذف حساب الموظف (${emp.name}) نهائياً.`, true);
+      await loadAdminData();
+    } catch (err) {
+      showStatus("تعذر حذف الموظف (قد توجد سجلات حضور مرتبطة به؛ يُنصح بإيقاف حسابه بدلاً من حذفه): " + err.message, false);
+    }
+  }
+
+  function renderEmployeesManagement() {
+    const container = document.getElementById("employeesMgmtList");
+    if (!adminAllEmployeesList.length) {
+      container.innerHTML = '<div class="hint" style="text-align:center;">لا يوجد موظفون مسجلون حالياً.</div>';
+      return;
+    }
+
+    container.innerHTML = adminAllEmployeesList.map(emp => {
+      const active = emp.is_active !== false;
+      const pillHtml = active
+        ? '<span class="status-pill pill-done">نشط</span>'
+        : '<span class="status-pill pill-inactive">موقوف</span>';
+      const toggleBtnHtml = active
+        ? `<button type="button" class="warn-btn sm-btn" onclick="toggleEmployeeActive('${emp.id}', false)">إيقاف الحساب</button>`
+        : `<button type="button" class="btn-outline sm-btn" onclick="toggleEmployeeActive('${emp.id}', true)">إعادة تفعيل</button>`;
+
+      return `
+        <div class="emp-mgmt-row">
+          <div>
+            <div class="live-emp-name">${escapeHtml(emp.name)}</div>
+            <div class="live-emp-sub">اسم المستخدم: ${escapeHtml(emp.username || "---")}</div>
+          </div>
+          <div class="emp-mgmt-actions">
+            ${pillHtml}
+            <button type="button" class="btn-outline sm-btn" onclick="editEmployeePassword('${emp.id}')">تغيير كلمة المرور</button>
+            ${toggleBtnHtml}
+            <button type="button" class="btn-danger-outline sm-btn" onclick="deleteEmployeePermanently('${emp.id}')">حذف نهائي</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  /* --- التقارير الشهرية وتصدير Excel وحذف الشهور --- */
   function getMonthKey(dateStr) {
     return (dateStr || "").slice(0, 7);
   }
@@ -1425,17 +2252,23 @@
 
   async function loadAdminData() {
     try {
+      const today = getLocalTodayStr();
+      await syncActiveLeavePeriodsForAllEmployees(today);
+
       const [emps, logs] = await Promise.all([
-        sbFetch("employees?select=id,name"),
+        sbFetch("employees?select=id,name,username,is_active&order=name.asc"),
         sbFetch("attendance_logs?select=*&order=work_date.desc,updated_at.desc")
       ]);
 
+      adminAllEmployeesList = Array.isArray(emps) ? emps : [];
+      adminActiveEmployeesList = adminAllEmployeesList.filter(e => e.is_active !== false);
       adminEmployeesMap = {};
-      if (Array.isArray(emps)) {
-        emps.forEach(e => { adminEmployeesMap[e.id] = e.name; });
-      }
+      adminAllEmployeesList.forEach(e => { adminEmployeesMap[e.id] = e.name; });
+
       adminLogsCache = Array.isArray(logs) ? logs : [];
+      buildTodayStatusList();
       renderAdminMonths();
+      renderEmployeesManagement();
     } catch (err) {
       showStatus("خطأ أثناء تحميل بيانات لوحة المدير: " + err.message, false);
     }
@@ -1472,6 +2305,9 @@
   setInterval(() => {
     syncLockedTodayDate();
     evaluateEveningReminder(false);
+    if (currentUser && currentUser.role === "manager") {
+      buildTodayStatusList();
+    }
   }, 60 * 1000);
 </script>
 </body>
