@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%232563eb'/><circle cx='90' cy='68' r='26' fill='%23ffffff'/><path d='M42 144c0-25 22-42 48-42s48 17 48 42' fill='%23ffffff'/><circle cx='136' cy='46' r='18' fill='%230d9488'/><path d='M129 46l5 5 9-11' stroke='%23ffffff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
 <title>متتبع الحضور والغياب</title>
 <link rel="manifest" href="manifest.json" />
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
   :root {
     --bg: #f4f7fb;
@@ -37,7 +38,7 @@
     padding: 16px;
   }
   .container {
-    max-width: 820px;
+    max-width: 860px;
     margin: 0 auto;
     background: var(--card);
     border: 1px solid var(--border);
@@ -96,10 +97,24 @@
   }
   .reminder-title { font-weight: 700; font-size: 14px; color: #78350f; }
 
+  .welcome-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: var(--soft-blue);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+    padding: 13px 16px;
+    margin-bottom: 16px;
+  }
+  .welcome-title { font-size: 15.5px; font-weight: 700; color: var(--text); }
+  .welcome-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
   .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   @media (max-width: 720px) {
-    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
     body { padding: 10px; }
     .container { padding: 16px; border-radius: 16px; }
   }
@@ -116,13 +131,6 @@
     background: #fff;
     color: var(--text);
     transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  input[readonly] {
-    background: #f8fafc;
-    color: #475569;
-    cursor: not-allowed;
-    direction: ltr;
-    text-align: right;
   }
   input:focus, textarea:focus {
     outline: none;
@@ -158,7 +166,6 @@
     color: var(--primary);
     font-weight: 700;
   }
-  .menu-empty { padding: 10px 12px; font-size: 13px; color: var(--muted); }
 
   .mini-btn {
     padding: 6px 10px !important;
@@ -174,6 +181,11 @@
     background: #fef3c7;
     color: #92400e;
     border: 1px solid #f59e0b;
+  }
+  .sm-btn {
+    padding: 8px 12px !important;
+    font-size: 12.5px !important;
+    border-radius: 9px !important;
   }
 
   .time-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
@@ -249,6 +261,39 @@
   .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fca5a5; }
   .btn-danger-active { background: var(--danger); color: #fff; border: 1px solid var(--danger); }
 
+  .admin-summary-box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: var(--soft-blue);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .months-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 720px) {
+    .months-grid { grid-template-columns: 1fr; }
+  }
+  .month-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 15px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  }
+  .month-card-title { font-size: 16px; font-weight: 700; color: var(--primary); margin: 0 0 6px; }
+  .month-card-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .month-card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .hidden { display: none !important; }
+
   #status {
     margin-top: 16px;
     padding: 12px 14px;
@@ -259,7 +304,6 @@
   }
   .status-ok { display: block !important; background: #dcfce7; color: #166534; }
   .status-err { display: block !important; background: #fee2e2; color: #991b1b; }
-  .locked { opacity: 0.55; pointer-events: none; }
   .muted-section { opacity: 0.45; pointer-events: none; }
 </style>
 </head>
@@ -268,12 +312,12 @@
   <div class="header">
     <div>
       <h1>متتبع الحضور والغياب</h1>
-      <p>رفع الحضور أولاً للمتابعة، ثم استكمال الانصراف وملخص التقرير اليومي والعمل الإضافي</p>
+      <p id="headerSubtitle">تسجيل الدخول بحساب الموظف أو المدير</p>
     </div>
     <div class="header-badges">
-      <span class="stage-pill" id="stagePill">الحالة: بانتظار التحقق</span>
+      <span class="stage-pill" id="stagePill">الحالة: بانتظار تسجيل الدخول</span>
       <span class="badge" id="netBadge">متصل بالسحابة</span>
-      <button type="button" class="warn-btn" id="headerNotifyBtn" onclick="subscribeEmployeeToPush()">تفعيل تنبيهات الجهاز</button>
+      <button type="button" class="warn-btn hidden" id="headerNotifyBtn" onclick="subscribeEmployeeToPush()">تفعيل تنبيهات الجهاز</button>
     </div>
   </div>
 
@@ -285,190 +329,221 @@
     <div id="reminderText" style="margin-top: 6px;"></div>
   </div>
 
-  <div class="grid-3">
-    <div class="field emp-wrap">
-      <label for="empSearch">اسم الموظف</label>
-      <input
-        type="text"
-        id="empSearch"
-        placeholder="جاري تحميل الأسماء..."
-        autocomplete="off"
-        onfocus="openEmpMenu()"
-        oninput="onEmpInput()"
-      />
-      <input type="hidden" id="employeeSelect" value="" />
-      <div id="empMenu" class="custom-menu"></div>
-    </div>
-
-    <div class="field">
-      <label for="pinInput">الرمز السري (PIN)</label>
-      <input type="password" id="pinInput" inputmode="numeric" placeholder="أدخل رمزك السري" />
-    </div>
-
-    <div class="field">
-      <label for="workDateDisplay">تاريخ اليوم (ثابت)</label>
-      <input
-        type="text"
-        id="workDateDisplay"
-        value=""
-        readonly
-        aria-readonly="true"
-        tabindex="-1"
-      />
-      <input type="hidden" id="workDate" value="" />
-    </div>
-  </div>
-
-  <div class="actions" style="margin-top: 0; margin-bottom: 18px;">
-    <button type="button" class="btn-outline" onclick="unlockAndLoad()">تحقق وتحميل السجل</button>
-  </div>
-
-  <div id="formBody" class="locked">
-    <div class="section-box danger-box">
-      <div class="toggle-row">
-        <span>هل الموظف غائب اليوم؟</span>
-        <button type="button" id="absentBtn" class="btn-danger-outline" onclick="toggleAbsentMode()">غياب</button>
-      </div>
-      <div id="absenceBox" class="collapsible">
+  <!-- 1. شاشة تسجيل الدخول الموحدة -->
+  <div id="loginView">
+    <div class="section-box">
+      <div class="grid-2">
         <div class="field" style="margin-bottom:0;">
-          <label for="absenceReason">سبب الغياب</label>
-          <textarea id="absenceReason" placeholder="اكتب سبب الغياب (مثال: إجازة مرضية، ظرف عائلي، عذر مسبق...)"></textarea>
+          <label for="loginUsername">اسم المستخدم (Username)</label>
+          <input
+            type="text"
+            id="loginUsername"
+            autocomplete="username"
+            placeholder="أدخل اسم المستخدم"
+            onkeydown="if(event.key==='Enter') handleLogin()"
+          />
         </div>
+
+        <div class="field" style="margin-bottom:0;">
+          <label for="loginPassword">كلمة المرور (Password)</label>
+          <input
+            type="password"
+            id="loginPassword"
+            autocomplete="current-password"
+            placeholder="أدخل كلمة المرور"
+            onkeydown="if(event.key==='Enter') handleLogin()"
+          />
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top: 16px;">
+        <button type="button" class="btn-primary" id="loginBtn" onclick="handleLogin()">تسجيل الدخول</button>
       </div>
     </div>
+  </div>
 
-    <div id="attendanceDetails">
-      <div class="section-box">
-        <div class="grid-2">
-          <div class="field time-picker-wrap" style="margin-bottom:0;">
-            <label>بداية الحضور</label>
-            <div class="time-row">
-              <input type="text" id="checkIn_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('checkIn')" />
-              <span class="time-colon">:</span>
-              <input type="text" id="checkIn_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('checkIn')" />
-              <button type="button" class="mini-btn" onclick="toggleTimeSlots('checkIn')">قائمة</button>
-            </div>
-            <input type="hidden" id="checkIn" value="" />
-            <div id="checkIn_slots" class="time-list-popover"></div>
-          </div>
-
-          <div class="field time-picker-wrap" style="margin-bottom:0;">
-            <label>موعد الانصراف (في نهاية الدوام)</label>
-            <div class="time-row">
-              <input type="text" id="checkOut_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('checkOut')" />
-              <span class="time-colon">:</span>
-              <input type="text" id="checkOut_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('checkOut')" />
-              <button type="button" class="mini-btn" onclick="toggleTimeSlots('checkOut')">قائمة</button>
-            </div>
-            <input type="hidden" id="checkOut" value="" />
-            <div id="checkOut_slots" class="time-list-popover"></div>
-          </div>
-        </div>
-
-        <div class="actions" style="margin-top: 14px;">
-          <button type="button" class="btn-primary" onclick="checkInNowAndUpload()">تسجيل حضور الآن ورفعه</button>
-          <button type="button" class="btn-outline" onclick="setNow('checkIn')">تحديد وقت الحضور الآن</button>
-          <button type="button" class="btn-outline" onclick="setNow('checkOut')">تحديد وقت الانصراف الآن</button>
-        </div>
+  <!-- 2. واجهة الموظف -->
+  <div id="employeeView" class="hidden">
+    <div class="welcome-bar">
+      <div>
+        <div class="welcome-title" id="welcomeText">أهلاً بك</div>
+        <div class="welcome-meta" id="welcomeDateText">تاريخ اليوم: ---</div>
       </div>
+      <button type="button" class="btn-outline sm-btn" onclick="logout()">تسجيل خروج</button>
+    </div>
+    <input type="hidden" id="workDate" value="" />
 
-      <div class="section-box">
-        <label for="dailySummary">ملخص التقرير اليومي</label>
-        <span class="hint">اكتب ملخصاً واضحاً لما تم إنجازه خلال دوام اليوم والملفات أو المهام التي تم العمل عليها.</span>
-        <textarea
-          id="dailySummary"
-          placeholder="مثال: مراجعة قيود اليومية، مطابقة الحسابات البنكية، وتحديث ملفات العملاء..."
-          oninput="evaluateEveningReminder(false)"
-        ></textarea>
-      </div>
-
-      <div class="section-box">
+    <div id="formBody">
+      <div class="section-box danger-box">
         <div class="toggle-row">
-          <span>هل يوجد وقت استئذان في المنتصف؟</span>
-          <input type="checkbox" id="hasPermission" onchange="toggleBox('hasPermission', 'permBox')" />
+          <span>هل الموظف غائب اليوم؟</span>
+          <button type="button" id="absentBtn" class="btn-danger-outline" onclick="toggleAbsentMode()">غياب</button>
         </div>
-        <div id="permBox" class="collapsible">
-          <div class="grid-2">
-            <div class="field time-picker-wrap">
-              <label>من الساعة</label>
-              <div class="time-row">
-                <input type="text" id="permFrom_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('permFrom')" />
-                <span class="time-colon">:</span>
-                <input type="text" id="permFrom_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('permFrom')" />
-                <button type="button" class="mini-btn" onclick="toggleTimeSlots('permFrom')">قائمة</button>
-              </div>
-              <input type="hidden" id="permFrom" value="" />
-              <div id="permFrom_slots" class="time-list-popover"></div>
-            </div>
-
-            <div class="field time-picker-wrap">
-              <label>إلى الساعة</label>
-              <div class="time-row">
-                <input type="text" id="permTo_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('permTo')" />
-                <span class="time-colon">:</span>
-                <input type="text" id="permTo_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('permTo')" />
-                <button type="button" class="mini-btn" onclick="toggleTimeSlots('permTo')">قائمة</button>
-              </div>
-              <input type="hidden" id="permTo" value="" />
-              <div id="permTo_slots" class="time-list-popover"></div>
-            </div>
-          </div>
-
+        <div id="absenceBox" class="collapsible">
           <div class="field" style="margin-bottom:0;">
-            <label for="permReason">سبب الاستئذان</label>
-            <input type="text" id="permReason" placeholder="مثال: مراجعة طبية، إنهاء معاملة شخصية، ظرف طارئ..." />
+            <label for="absenceReason">سبب الغياب</label>
+            <textarea id="absenceReason" placeholder="اكتب سبب الغياب (مثال: إجازة مرضية، ظرف عائلي، عذر مسبق...)"></textarea>
           </div>
         </div>
       </div>
 
-      <div class="section-box teal">
-        <div class="toggle-row">
-          <span>هل تم أداء عمل إضافي؟</span>
-          <input type="checkbox" id="hasOvertime" onchange="toggleBox('hasOvertime', 'otBox')" />
-        </div>
-        <div id="otBox" class="collapsible">
+      <div id="attendanceDetails">
+        <div class="section-box">
           <div class="grid-2">
-            <div class="field time-picker-wrap">
-              <label>وقت الإضافي من</label>
+            <div class="field time-picker-wrap" style="margin-bottom:0;">
+              <label>بداية الحضور</label>
               <div class="time-row">
-                <input type="text" id="otFrom_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('otFrom')" />
+                <input type="text" id="checkIn_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('checkIn')" />
                 <span class="time-colon">:</span>
-                <input type="text" id="otFrom_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('otFrom')" />
-                <button type="button" class="mini-btn" onclick="toggleTimeSlots('otFrom')">قائمة</button>
+                <input type="text" id="checkIn_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('checkIn')" />
+                <button type="button" class="mini-btn" onclick="toggleTimeSlots('checkIn')">قائمة</button>
               </div>
-              <input type="hidden" id="otFrom" value="" />
-              <div id="otTo_slots" class="time-list-popover"></div>
+              <input type="hidden" id="checkIn" value="" />
+              <div id="checkIn_slots" class="time-list-popover"></div>
             </div>
 
-            <div class="field time-picker-wrap">
-              <label>وقت الإضافي إلى</label>
+            <div class="field time-picker-wrap" style="margin-bottom:0;">
+              <label>موعد الانصراف (في نهاية الدوام)</label>
               <div class="time-row">
-                <input type="text" id="otTo_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('otTo')" />
+                <input type="text" id="checkOut_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('checkOut')" />
                 <span class="time-colon">:</span>
-                <input type="text" id="otTo_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('otTo')" />
-                <button type="button" class="mini-btn" onclick="toggleTimeSlots('otTo')">قائمة</button>
+                <input type="text" id="checkOut_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('checkOut')" />
+                <button type="button" class="mini-btn" onclick="toggleTimeSlots('checkOut')">قائمة</button>
               </div>
-              <input type="hidden" id="otTo" value="" />
-              <div id="otFrom_slots" class="time-list-popover"></div>
+              <input type="hidden" id="checkOut" value="" />
+              <div id="checkOut_slots" class="time-list-popover"></div>
             </div>
           </div>
 
-          <div class="field">
-            <label for="otReason">سبب العمل وقت إضافي</label>
-            <input type="text" id="otReason" placeholder="مثال: إغلاق حسابات نهاية الشهر أو ضغط تسليمات" />
+          <div class="actions" style="margin-top: 14px;">
+            <button type="button" class="btn-primary" onclick="checkInNowAndUpload()">تسجيل حضور الآن ورفعه</button>
+            <button type="button" class="btn-outline" onclick="setNow('checkIn')">تحديد وقت الحضور الآن</button>
+            <button type="button" class="btn-outline" onclick="setNow('checkOut')">تحديد وقت الانصراف الآن</button>
           </div>
-          <div class="field" style="margin-bottom:0;">
-            <label for="taskDone">المهمة المنفذة في الوقت الإضافي</label>
-            <textarea id="taskDone" placeholder="اكتب ملخصاً واضحاً للمهمة الإضافية التي تم إنجازها..."></textarea>
+        </div>
+
+        <div class="section-box">
+          <label for="dailySummary">ملخص التقرير اليومي</label>
+          <span class="hint">اكتب ملخصاً واضحاً لما تم إنجازه خلال دوام اليوم والملفات أو المهام التي تم العمل عليها.</span>
+          <textarea
+            id="dailySummary"
+            placeholder="مثال: مراجعة قيود اليومية، مطابقة الحسابات البنكية، وتحديث ملفات العملاء..."
+            oninput="evaluateEveningReminder(false)"
+          ></textarea>
+        </div>
+
+        <div class="section-box">
+          <div class="toggle-row">
+            <span>هل يوجد وقت استئذان في المنتصف؟</span>
+            <input type="checkbox" id="hasPermission" onchange="toggleBox('hasPermission', 'permBox')" />
+          </div>
+          <div id="permBox" class="collapsible">
+            <div class="grid-2">
+              <div class="field time-picker-wrap">
+                <label>من الساعة</label>
+                <div class="time-row">
+                  <input type="text" id="permFrom_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('permFrom')" />
+                  <span class="time-colon">:</span>
+                  <input type="text" id="permFrom_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('permFrom')" />
+                  <button type="button" class="mini-btn" onclick="toggleTimeSlots('permFrom')">قائمة</button>
+                </div>
+                <input type="hidden" id="permFrom" value="" />
+                <div id="permFrom_slots" class="time-list-popover"></div>
+              </div>
+
+              <div class="field time-picker-wrap">
+                <label>إلى الساعة</label>
+                <div class="time-row">
+                  <input type="text" id="permTo_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('permTo')" />
+                  <span class="time-colon">:</span>
+                  <input type="text" id="permTo_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('permTo')" />
+                  <button type="button" class="mini-btn" onclick="toggleTimeSlots('permTo')">قائمة</button>
+                </div>
+                <input type="hidden" id="permTo" value="" />
+                <div id="permTo_slots" class="time-list-popover"></div>
+              </div>
+            </div>
+
+            <div class="field" style="margin-bottom:0;">
+              <label for="permReason">سبب الاستئذان</label>
+              <input type="text" id="permReason" placeholder="مثال: مراجعة طبية، إنهاء معاملة شخصية، ظرف طارئ..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="section-box teal">
+          <div class="toggle-row">
+            <span>هل تم أداء عمل إضافي؟</span>
+            <input type="checkbox" id="hasOvertime" onchange="toggleBox('hasOvertime', 'otBox')" />
+          </div>
+          <div id="otBox" class="collapsible">
+            <div class="grid-2">
+              <div class="field time-picker-wrap">
+                <label>وقت الإضافي من</label>
+                <div class="time-row">
+                  <input type="text" id="otFrom_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('otFrom')" />
+                  <span class="time-colon">:</span>
+                  <input type="text" id="otFrom_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('otFrom')" />
+                  <button type="button" class="mini-btn" onclick="toggleTimeSlots('otFrom')">قائمة</button>
+                </div>
+                <input type="hidden" id="otFrom" value="" />
+                <div id="otFrom_slots" class="time-list-popover"></div>
+              </div>
+
+              <div class="field time-picker-wrap">
+                <label>وقت الإضافي إلى</label>
+                <div class="time-row">
+                  <input type="text" id="otTo_hh" class="time-box" inputmode="numeric" maxlength="2" placeholder="HH" oninput="syncTime('otTo')" />
+                  <span class="time-colon">:</span>
+                  <input type="text" id="otTo_mm" class="time-box" inputmode="numeric" maxlength="2" placeholder="MM" oninput="syncTime('otTo')" />
+                  <button type="button" class="mini-btn" onclick="toggleTimeSlots('otTo')">قائمة</button>
+                </div>
+                <input type="hidden" id="otTo" value="" />
+                <div id="otTo_slots" class="time-list-popover"></div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="otReason">سبب العمل وقت إضافي</label>
+              <input type="text" id="otReason" placeholder="مثال: إغلاق حسابات نهاية الشهر أو ضغط تسليمات" />
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label for="taskDone">المهمة المنفذة في الوقت الإضافي</label>
+              <textarea id="taskDone" placeholder="اكتب ملخصاً واضحاً للمهمة الإضافية التي تم إنجازها..."></textarea>
+            </div>
           </div>
         </div>
       </div>
+
+      <div class="actions">
+        <button type="button" class="btn-primary" onclick="saveRecord(false)">حفظ / تحديث السجل</button>
+        <button type="button" id="quickCheckoutBtn" class="btn-teal" onclick="quickCheckoutAndSave()">تسجيل انصراف وحفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. لوحة تحكم المدير -->
+  <div id="adminView" class="hidden">
+    <div class="welcome-bar">
+      <div>
+        <div class="welcome-title" id="adminWelcomeText">لوحة متابعة المدير</div>
+        <div class="welcome-meta">تصدير تقارير الحضور والغياب بصيغة Excel وإدارة المساحة حسب الشهر</div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn-outline sm-btn" onclick="loadAdminData()">تحديث البيانات</button>
+        <button type="button" class="btn-danger-outline sm-btn" onclick="logout()">تسجيل خروج</button>
+      </div>
     </div>
 
-    <div class="actions">
-      <button type="button" class="btn-primary" onclick="saveRecord(false)">حفظ / تحديث السجل</button>
-      <button type="button" id="quickCheckoutBtn" class="btn-teal" onclick="quickCheckoutAndSave()">تسجيل انصراف وحفظ</button>
+    <div class="admin-summary-box">
+      <div>
+        <div style="font-weight:700; font-size:14.5px;" id="adminTotalSummary">جاري تحميل ملخص السجلات...</div>
+        <div class="hint" style="margin:3px 0 0;">يتم تصدير جميع الشهور في شيت واحد مرتب زمنياً من الأحدث للأقدم</div>
+      </div>
+      <button type="button" class="btn-teal" id="downloadAllBtn" onclick="downloadAllMonthsExcel()">تحميل البيانات كاملة (Excel)</button>
     </div>
+
+    <div id="monthsGrid" class="months-grid"></div>
   </div>
 
   <div id="status"></div>
@@ -476,31 +551,47 @@
 
 <script>
   const SUPABASE_URL = "https://idhaoooitmvwnkagpgzz.supabase.co";
-  const VAPID_PUBLIC_KEY = "BIj9WsWneiZOCaGBiRYOSL61nkO1_1vpAdbS1fgK8LUNKVkaEGAB_EDl_Vx78mTxdvhmAcnbsehAduFnsQXAyhQ"; // ضع مفتاحك العام الكامل هنا
+  const VAPID_PUBLIC_KEY = "BIj9WsWneiZOCaGBiRYOSL61nkO1_1vpAdbS1fgK8LUNKVkaEGAB_EDl_Vx78mTxdvhmAcnbsehAduFnsQXAyhQ";
   const SUPABASE_KEY = "sb_publishable_v0oaMQ9YTCRFLoe9dUKMdg_92VvsT05";
   const REMINDER_START_HOUR = 18; // 6:00 PM
 
-function urlBase64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
-}
   const HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": `Bearer ${SUPABASE_KEY}`,
     "Content-Type": "application/json",
     "Prefer": "resolution=merge-duplicates,return=representation"
-    
   };
 
-  let verifiedEmployeeId = null;
-  let employeesCache = [];
+  const ARABIC_MONTHS = {
+    "01": "يناير",
+    "02": "فبراير",
+    "03": "مارس",
+    "04": "أبريل",
+    "05": "مايو",
+    "06": "يونيو",
+    "07": "يوليو",
+    "08": "أغسطس",
+    "09": "سبتمبر",
+    "10": "أكتوبر",
+    "11": "نوفمبر",
+    "12": "ديسمبر"
+  };
+
+  let currentUser = null; // { role: 'employee' | 'manager', id, name, username }
   let isAbsent = false;
   let existingRecord = null;
   let lastReminderKey = null;
+  let adminLogsCache = [];
+  let adminEmployeesMap = {};
 
   const TIME_FIELDS = ["checkIn", "checkOut", "permFrom", "permTo", "otFrom", "otTo"];
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)));
+  }
 
   function getLocalTodayStr() {
     const now = new Date();
@@ -512,13 +603,41 @@ function urlBase64ToUint8Array(base64String) {
 
   function syncLockedTodayDate() {
     const today = getLocalTodayStr();
-    document.getElementById("workDate").value = today;
-    document.getElementById("workDateDisplay").value = today;
+    const workDateEl = document.getElementById("workDate");
+    const welcomeDateEl = document.getElementById("welcomeDateText");
+    if (workDateEl) workDateEl.value = today;
+    if (welcomeDateEl) welcomeDateEl.textContent = `تاريخ اليوم: ${today}`;
     return today;
   }
 
-  /* --- نظام التذكير كل ساعة بعد الساعة 6 مساءً --- */
+  function showStatus(msg, ok = true) {
+    const el = document.getElementById("status");
+    el.textContent = msg;
+    el.className = ok ? "status-ok" : "status-err";
+  }
+
+  function clearStatus() {
+    const el = document.getElementById("status");
+    el.textContent = "";
+    el.className = "";
+  }
+
+  async function sbFetch(path, options = {}) {
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      ...options,
+      headers: { ...HEADERS, ...(options.headers || {}) }
+    });
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error(`HTTP ${resp.status}: ${errText}`);
+    }
+    const text = await resp.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  /* --- نظام التذكير المسائي للموظف --- */
   function isReportPendingToday() {
+    if (!currentUser || currentUser.role !== "employee") return false;
     if (existingRecord && existingRecord.is_absent) return false;
     const hasCheckout = !!(document.getElementById("checkOut").value || (existingRecord && existingRecord.check_out));
     const hasSummary = !!(document.getElementById("dailySummary").value.trim() || (existingRecord && existingRecord.daily_summary));
@@ -568,9 +687,14 @@ function urlBase64ToUint8Array(base64String) {
   }
 
   function evaluateEveningReminder(forceTrigger = false) {
+    const banner = document.getElementById("reminderBanner");
+    if (!currentUser || currentUser.role !== "employee") {
+      banner.classList.remove("show");
+      return;
+    }
+
     const now = new Date();
     const currentHour = now.getHours();
-    const banner = document.getElementById("reminderBanner");
     const titleEl = document.getElementById("reminderTitle");
     const textEl = document.getElementById("reminderText");
 
@@ -592,12 +716,18 @@ function urlBase64ToUint8Array(base64String) {
     }
   }
 
-  function updateStageBadge(rec) {
+  function updateStageBadge(rec = null) {
     const pill = document.getElementById("stagePill");
-    if (!verifiedEmployeeId) {
-      pill.textContent = "الحالة: بانتظار التحقق";
+    if (!currentUser) {
+      pill.textContent = "الحالة: بانتظار تسجيل الدخول";
       pill.style.background = "#f1f5f9";
       pill.style.color = "#334155";
+      return;
+    }
+    if (currentUser.role === "manager") {
+      pill.textContent = `وضع المدير: ${currentUser.name}`;
+      pill.style.background = "#ede9fe";
+      pill.style.color = "#5b21b6";
       return;
     }
     if (rec && rec.is_absent) {
@@ -619,19 +749,111 @@ function urlBase64ToUint8Array(base64String) {
     }
   }
 
-  async function sbFetch(path, options = {}) {
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-      ...options,
-      headers: { ...HEADERS, ...(options.headers || {}) }
-    });
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error(`HTTP ${resp.status}: ${errText}`);
+  /* --- تسجيل الدخول والخروج --- */
+  async function handleLogin() {
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+
+    if (!username || !password) {
+      showStatus("يرجى إدخال اسم المستخدم وكلمة المرور.", false);
+      return;
     }
-    const text = await resp.text();
-    return text ? JSON.parse(text) : null;
+
+    const loginBtn = document.getElementById("loginBtn");
+    loginBtn.disabled = true;
+    loginBtn.textContent = "جاري التحقق...";
+
+    try {
+      // 1. التحقق من جدول المديرين أولاً
+      const managers = await sbFetch(
+        `managers?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(password)}&is_active=eq.true&select=id,name,username`
+      );
+
+      if (Array.isArray(managers) && managers.length > 0) {
+        currentUser = {
+          role: "manager",
+          id: managers[0].id,
+          name: managers[0].name,
+          username: managers[0].username
+        };
+        document.getElementById("loginView").classList.add("hidden");
+        document.getElementById("employeeView").classList.add("hidden");
+        document.getElementById("adminView").classList.remove("hidden");
+        document.getElementById("headerNotifyBtn").classList.add("hidden");
+        document.getElementById("headerSubtitle").textContent = "لوحة تحكم المدير — تقارير Excel وإدارة البيانات الشهرية";
+        document.getElementById("adminWelcomeText").textContent = `مرحباً بك أ / ${currentUser.name}`;
+        updateStageBadge(null);
+        evaluateEveningReminder(false);
+        showStatus(`تم تسجيل دخول المدير (${currentUser.name}) بنجاح.`, true);
+        await loadAdminData();
+        return;
+      }
+
+      // 2. التحقق من جدول الموظفين
+      const employees = await sbFetch(
+        `employees?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(password)}&is_active=eq.true&select=id,name,username`
+      );
+
+      if (Array.isArray(employees) && employees.length > 0) {
+        currentUser = {
+          role: "employee",
+          id: employees[0].id,
+          name: employees[0].name,
+          username: employees[0].username
+        };
+        document.getElementById("loginView").classList.add("hidden");
+        document.getElementById("adminView").classList.add("hidden");
+        document.getElementById("employeeView").classList.remove("hidden");
+        document.getElementById("headerNotifyBtn").classList.remove("hidden");
+        document.getElementById("headerSubtitle").textContent = "رفع الحضور أولاً للمتابعة، ثم استكمال الانصراف وملخص التقرير اليومي والعمل الإضافي";
+        document.getElementById("welcomeText").textContent = `أهلاً بك، ${currentUser.name}`;
+        const today = syncLockedTodayDate();
+
+        const logs = await sbFetch(
+          `attendance_logs?employee_id=eq.${encodeURIComponent(currentUser.id)}&work_date=eq.${encodeURIComponent(today)}&select=*`
+        );
+        existingRecord = Array.isArray(logs) && logs.length > 0 ? logs[0] : null;
+        fillForm(existingRecord);
+        updateStageBadge(existingRecord);
+        updateNotifyButtonLabel();
+        evaluateEveningReminder(false);
+
+        if (!existingRecord) {
+          showStatus(`مرحباً ${currentUser.name}؛ لا يوجد سجل لليوم (${today}) بعد، يمكنك تسجيل حضورك ورفعه الآن.`, true);
+        } else if (existingRecord.check_in && !existingRecord.check_out && !existingRecord.is_absent) {
+          showStatus(`مرحباً ${currentUser.name}؛ تم تحميل حضورك (${existingRecord.check_in.slice(0, 5)}). يمكنك الآن إضافة الانصراف وملخص التقرير اليومي.`, true);
+        } else {
+          showStatus(`مرحباً ${currentUser.name}؛ تم تحميل سجل اليوم (${today}).`, true);
+        }
+        return;
+      }
+
+      showStatus("اسم المستخدم أو كلمة المرور غير صحيحة.", false);
+    } catch (err) {
+      showStatus("حدث خطأ أثناء تسجيل الدخول: " + err.message, false);
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = "تسجيل الدخول";
+    }
   }
 
+  function logout() {
+    currentUser = null;
+    existingRecord = null;
+    adminLogsCache = [];
+    clearFormFields();
+    document.getElementById("loginPassword").value = "";
+    document.getElementById("employeeView").classList.add("hidden");
+    document.getElementById("adminView").classList.add("hidden");
+    document.getElementById("headerNotifyBtn").classList.add("hidden");
+    document.getElementById("reminderBanner").classList.remove("show");
+    document.getElementById("loginView").classList.remove("hidden");
+    document.getElementById("headerSubtitle").textContent = "تسجيل الدخول بحساب الموظف أو المدير";
+    updateStageBadge(null);
+    clearStatus();
+  }
+
+  /* --- أدوات نموذج الموظف --- */
   function applyAbsentState(absent) {
     isAbsent = !!absent;
     const btn = document.getElementById("absentBtn");
@@ -667,43 +889,6 @@ function urlBase64ToUint8Array(base64String) {
     applyAbsentState(!isAbsent);
   }
 
-  /* --- قائمة الموظفين --- */
-  function renderEmpMenu(items) {
-    const menu = document.getElementById("empMenu");
-    const selectedId = document.getElementById("employeeSelect").value;
-    menu.innerHTML = "";
-    if (!items.length) {
-      menu.innerHTML = '<div class="menu-empty">لا توجد أسماء مطابقة</div>';
-      return;
-    }
-    items.forEach(emp => {
-      const div = document.createElement("div");
-      div.className = "menu-item" + (emp.id === selectedId ? " active" : "");
-      div.textContent = emp.name;
-      div.onclick = () => {
-        document.getElementById("employeeSelect").value = emp.id;
-        document.getElementById("empSearch").value = emp.name;
-        menu.classList.remove("open");
-      };
-      menu.appendChild(div);
-    });
-  }
-
-  function openEmpMenu() {
-    if (!employeesCache.length) return;
-    renderEmpMenu(employeesCache);
-    document.getElementById("empMenu").classList.add("open");
-  }
-
-  function onEmpInput() {
-    document.getElementById("employeeSelect").value = "";
-    const q = document.getElementById("empSearch").value.trim().toLowerCase();
-    const filtered = q ? employeesCache.filter(e => e.name.toLowerCase().includes(q)) : employeesCache;
-    renderEmpMenu(filtered);
-    document.getElementById("empMenu").classList.add("open");
-  }
-
-  /* --- منتقي الوقت --- */
   function buildTimeSlots() {
     const slots = [];
     for (let h = 0; h < 24; h++) {
@@ -768,7 +953,6 @@ function urlBase64ToUint8Array(base64String) {
   }
 
   function closeAllPopovers() {
-    document.getElementById("empMenu").classList.remove("open");
     TIME_FIELDS.forEach(f => {
       const el = document.getElementById(`${f}_slots`);
       if (el) el.classList.remove("open");
@@ -776,16 +960,10 @@ function urlBase64ToUint8Array(base64String) {
   }
 
   document.addEventListener("click", function (e) {
-    if (!e.target.closest(".emp-wrap") && !e.target.closest(".time-picker-wrap")) {
+    if (!e.target.closest(".time-picker-wrap")) {
       closeAllPopovers();
     }
   });
-
-  function showStatus(msg, ok = true) {
-    const el = document.getElementById("status");
-    el.textContent = msg;
-    el.className = ok ? "status-ok" : "status-err";
-  }
 
   function toggleBox(checkId, boxId) {
     const checked = document.getElementById(checkId).checked;
@@ -839,83 +1017,8 @@ function urlBase64ToUint8Array(base64String) {
     document.getElementById("taskDone").value = rec.task_done || "";
   }
 
-  async function loadEmployees() {
-    const searchInput = document.getElementById("empSearch");
-    try {
-      const list = await sbFetch("employees?is_active=eq.true&select=id,name&order=name.asc");
-      if (!Array.isArray(list) || list.length === 0) {
-        searchInput.placeholder = "اختر اسمك...";
-        showStatus("تم الاتصال ولكن قائمة الموظفين فارغة.", false);
-        return;
-      }
-      employeesCache = list;
-      searchInput.placeholder = "اختر أو ابحث عن اسمك...";
-      renderEmpMenu(employeesCache);
-    } catch (err) {
-      searchInput.placeholder = "اختر اسمك...";
-      showStatus("تعذر تحميل قائمة الموظفين: " + err.message, false);
-    }
-  }
-
-  async function unlockAndLoad() {
-    let empId = document.getElementById("employeeSelect").value;
-    const typedName = document.getElementById("empSearch").value.trim();
-    if (!empId && typedName) {
-      const exact = employeesCache.find(e => e.name.trim() === typedName);
-      if (exact) {
-        empId = exact.id;
-        document.getElementById("employeeSelect").value = exact.id;
-      }
-    }
-
-    const pin = document.getElementById("pinInput").value.trim();
-    const workDate = syncLockedTodayDate();
-
-    if (!empId || !pin) {
-      showStatus("يرجى اختيار الاسم من القائمة وإدخال الرمز السري (PIN).", false);
-      return;
-    }
-
-    try {
-      const rows = await sbFetch(`employees?id=eq.${encodeURIComponent(empId)}&pin=eq.${encodeURIComponent(pin)}&select=id,name`);
-      if (!Array.isArray(rows) || rows.length === 0) {
-        verifiedEmployeeId = null;
-        existingRecord = null;
-        updateStageBadge(null);
-        document.getElementById("formBody").classList.add("locked");
-        showStatus("الرمز السري غير صحيح.", false);
-        return;
-      }
-
-      verifiedEmployeeId = empId;
-      document.getElementById("formBody").classList.remove("locked");
-      showStatus(`تم التحقق بنجاح (${rows[0].name}). جاري تحميل سجل اليوم (${workDate})...`, true);
-
-      const logs = await sbFetch(
-        `attendance_logs?employee_id=eq.${encodeURIComponent(empId)}&work_date=eq.${encodeURIComponent(workDate)}&select=*`
-      );
-      existingRecord = Array.isArray(logs) && logs.length > 0 ? logs[0] : null;
-      fillForm(existingRecord);
-      updateStageBadge(existingRecord);
-      evaluateEveningReminder(false);
-
-      if (!existingRecord) {
-        showStatus("لا يوجد سجل لليوم بعد؛ يمكنك تسجيل الحضور ورفعه الآن للمتابعة.", true);
-      } else if (existingRecord.check_in && !existingRecord.check_out && !existingRecord.is_absent) {
-        showStatus(`تم تحميل حضور اليوم (${existingRecord.check_in.slice(0, 5)}). يمكنك الآن إضافة الانصراف وملخص التقرير اليومي.`, true);
-      } else {
-        showStatus("تم تحميل سجل اليوم؛ يمكنك التعديل والحفظ.", true);
-      }
-    } catch (err) {
-      showStatus("خطأ أثناء التحقق أو تحميل السجل: " + err.message, false);
-    }
-  }
-
   async function checkInNowAndUpload() {
-    if (!verifiedEmployeeId) {
-      showStatus("يرجى التحقق من الرمز السري أولاً.", false);
-      return;
-    }
+    if (!currentUser || currentUser.role !== "employee") return;
     if (isAbsent) {
       showStatus("أنت محدد كغائب اليوم؛ ألغِ وضع الغياب أولاً لتسجيل الحضور.", false);
       return;
@@ -925,10 +1028,7 @@ function urlBase64ToUint8Array(base64String) {
   }
 
   async function quickCheckoutAndSave() {
-    if (!verifiedEmployeeId) {
-      showStatus("يرجى التحقق من الرمز السري أولاً.", false);
-      return;
-    }
+    if (!currentUser || currentUser.role !== "employee") return;
     if (isAbsent) {
       showStatus("الموظف محدد كغائب اليوم؛ اضغط على «حفظ / تحديث السجل» لحفظ الغياب وسببه.", false);
       return;
@@ -938,8 +1038,8 @@ function urlBase64ToUint8Array(base64String) {
   }
 
   async function saveRecord(isCheckInOnly = false) {
-    if (!verifiedEmployeeId) {
-      showStatus("يرجى التحقق من الرمز السري أولاً.", false);
+    if (!currentUser || currentUser.role !== "employee") {
+      showStatus("يرجى تسجيل الدخول بحساب الموظف أولاً.", false);
       return;
     }
 
@@ -967,7 +1067,7 @@ function urlBase64ToUint8Array(base64String) {
 
     const payload = isAbsent
       ? {
-          employee_id: verifiedEmployeeId,
+          employee_id: currentUser.id,
           work_date: workDateVal,
           is_absent: true,
           absence_reason: absenceReasonVal,
@@ -986,7 +1086,7 @@ function urlBase64ToUint8Array(base64String) {
           updated_at: new Date().toISOString()
         }
       : {
-          employee_id: verifiedEmployeeId,
+          employee_id: currentUser.id,
           work_date: workDateVal,
           is_absent: false,
           absence_reason: null,
@@ -1032,6 +1132,263 @@ function urlBase64ToUint8Array(base64String) {
     }
   }
 
+  async function subscribeEmployeeToPush() {
+    if (!currentUser || currentUser.role !== "employee") {
+      showStatus("يرجى تسجيل الدخول بحساب الموظف أولاً.", false);
+      return;
+    }
+
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      showStatus("المتصفح أو الجهاز لا يدعم إشعارات الخلفية.", false);
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    updateNotifyButtonLabel();
+    if (permission !== "granted") {
+      showStatus("لم يتم السماح بالإشعارات من الجهاز.", false);
+      return;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      let subscription = await registration.pushManager.getSubscription();
+
+      if (!subscription) {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+      }
+
+      const subData = subscription.toJSON();
+      await sbFetch("push_subscriptions?on_conflict=employee_id,endpoint", {
+        method: "POST",
+        body: JSON.stringify({
+          employee_id: currentUser.id,
+          endpoint: subData.endpoint,
+          p256dh: subData.keys.p256dh,
+          auth: subData.keys.auth,
+          user_agent: navigator.userAgent,
+          is_active: true,
+          updated_at: new Date().toISOString()
+        })
+      });
+
+      showStatus("تم تفعيل تنبيهات الجهاز وربطها بحسابك بنجاح.", true);
+    } catch (err) {
+      showStatus("حدث خطأ أثناء حفظ اشتراك الإشعارات: " + err.message, false);
+    }
+  }
+
+  document.getElementById("notifyBtn").onclick = subscribeEmployeeToPush;
+
+  /* --- لوحة تحكم المدير وتصدير Excel --- */
+  function getMonthKey(dateStr) {
+    return (dateStr || "").slice(0, 7); // YYYY-MM
+  }
+
+  function formatMonthLabel(monthKey) {
+    if (!monthKey || !monthKey.includes("-")) return monthKey || "غير محدد";
+    const [year, month] = monthKey.split("-");
+    const monthName = ARABIC_MONTHS[month] || month;
+    return `${monthName} ${year}`;
+  }
+
+  function estimateKb(rows) {
+    const bytes = new Blob([JSON.stringify(rows)]).size;
+    return bytes < 1024 ? `${bytes} بايت` : `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  function calcWorkDuration(checkIn, checkOut, isAbsentFlag) {
+    if (isAbsentFlag || !checkIn || !checkOut) return "";
+    const [inH, inM] = checkIn.slice(0, 5).split(":").map(Number);
+    const [outH, outM] = checkOut.slice(0, 5).split(":").map(Number);
+    if ([inH, inM, outH, outM].some(Number.isNaN)) return "";
+    let diff = (outH * 60 + outM) - (inH * 60 + inM);
+    if (diff < 0) diff += 24 * 60;
+    const hrs = Math.floor(diff / 60);
+    const mins = diff % 60;
+    return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+  }
+
+  function mapLogsToExcelRows(logs) {
+    return logs.map(rec => {
+      const empName = adminEmployeesMap[rec.employee_id] || rec.employee_id || "";
+      const checkIn = rec.check_in ? rec.check_in.slice(0, 5) : "";
+      const checkOut = rec.check_out ? rec.check_out.slice(0, 5) : "";
+      const statusText = rec.is_absent
+        ? "غائب"
+        : (checkIn && checkOut ? "مكتمل" : (checkIn ? "حاضر (بدون انصراف)" : "غير مكتمل"));
+
+      return {
+        "التاريخ": rec.work_date || "",
+        "الشهر": formatMonthLabel(getMonthKey(rec.work_date)),
+        "اسم الموظف": empName,
+        "الحالة": statusText,
+        "بداية الحضور": checkIn,
+        "موعد الانصراف": checkOut,
+        "مدة الدوام": calcWorkDuration(checkIn, checkOut, rec.is_absent),
+        "ملخص التقرير اليومي": rec.daily_summary || "",
+        "سبب الغياب": rec.is_absent ? (rec.absence_reason || "") : "",
+        "استئذان؟": rec.has_permission ? "نعم" : "لا",
+        "الاستئذان من": rec.has_permission && rec.perm_from ? rec.perm_from.slice(0, 5) : "",
+        "الاستئذان إلى": rec.has_permission && rec.perm_to ? rec.perm_to.slice(0, 5) : "",
+        "سبب الاستئذان": rec.has_permission ? (rec.perm_reason || "") : "",
+        "عمل إضافي؟": rec.has_overtime ? "نعم" : "لا",
+        "الإضافي من": rec.has_overtime && rec.ot_from ? rec.ot_from.slice(0, 5) : "",
+        "الإضافي إلى": rec.has_overtime && rec.ot_to ? rec.ot_to.slice(0, 5) : "",
+        "سبب الإضافي": rec.has_overtime ? (rec.ot_reason || "") : "",
+        "المهمة الإضافية": rec.has_overtime ? (rec.task_done || "") : ""
+      };
+    });
+  }
+
+  function exportRowsToExcel(logs, fileName, sheetName) {
+    if (typeof XLSX === "undefined") {
+      showStatus("تعذر تحميل مكتبة تصدير Excel؛ تأكد من الاتصال بالإنترنت وأعد المحاولة.", false);
+      return;
+    }
+    if (!Array.isArray(logs) || logs.length === 0) {
+      showStatus("لا توجد سجلات لتصديرها.", false);
+      return;
+    }
+
+    const rows = mapLogsToExcelRows(logs);
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [
+      { wch: 13 }, // التاريخ
+      { wch: 16 }, // الشهر
+      { wch: 22 }, // اسم الموظف
+      { wch: 18 }, // الحالة
+      { wch: 14 }, // بداية الحضور
+      { wch: 14 }, // موعد الانصراف
+      { wch: 12 }, // مدة الدوام
+      { wch: 38 }, // ملخص التقرير اليومي
+      { wch: 26 }, // سبب الغياب
+      { wch: 11 }, // استئذان
+      { wch: 13 }, // من
+      { wch: 13 }, // إلى
+      { wch: 24 }, // سبب الاستئذان
+      { wch: 13 }, // إضافي
+      { wch: 13 }, // من
+      { wch: 13 }, // إلى
+      { wch: 24 }, // سبب الإضافي
+      { wch: 32 }  // المهمة الإضافية
+    ];
+
+    const wb = XLSX.utils.book_new();
+    wb.Workbook = { Views: [{ RTL: true }] };
+    const safeSheetName = (sheetName || "التقرير").slice(0, 31).replace(/[\\/?*[\]:]/g, "-");
+    XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
+    XLSX.writeFile(wb, fileName);
+  }
+
+  function downloadMonthExcel(monthKey) {
+    const monthLogs = adminLogsCache.filter(r => getMonthKey(r.work_date) === monthKey);
+    const label = formatMonthLabel(monthKey);
+    exportRowsToExcel(monthLogs, `حضور_${monthKey}.xlsx`, label);
+    showStatus(`تم تحميل ملف Excel لشهر ${label} (${monthLogs.length} سجل).`, true);
+  }
+
+  function downloadAllMonthsExcel() {
+    exportRowsToExcel(adminLogsCache, `سجل_الحضور_والغياب_كامل_${getLocalTodayStr()}.xlsx`, "جميع الشهور");
+    showStatus(`تم تحميل ملف Excel لكامل البيانات (${adminLogsCache.length} سجل) في شيت واحد.`, true);
+  }
+
+  async function deleteMonthLogs(monthKey) {
+    const monthLogs = adminLogsCache.filter(r => getMonthKey(r.work_date) === monthKey);
+    const label = formatMonthLabel(monthKey);
+
+    if (!monthLogs.length) {
+      showStatus(`لا توجد سجلات لحذفها في شهر ${label}.`, false);
+      return;
+    }
+
+    const firstConfirm = confirm(
+      `تحذير: سيتم حذف جميع سجلات شهر (${label}) وعددها (${monthLogs.length}) سجل نهائياً من قاعدة البيانات لتفريغ المساحة.\nهل قمت بتحميل نسخة احتياطية Excel أولاً؟`
+    );
+    if (!firstConfirm) return;
+
+    const typed = prompt(`لتأكيد الحذف النهائي لشهر (${label})، اكتب: ${monthKey}`);
+    if ((typed || "").trim() !== monthKey) {
+      showStatus("تم إلغاء الحذف لعدم مطابقة رمز الشهر.", false);
+      return;
+    }
+
+    const [y, m] = monthKey.split("-");
+    const lastDay = new Date(Number(y), Number(m), 0).getDate();
+    const startDate = `${monthKey}-01`;
+    const endDate = `${monthKey}-${String(lastDay).padStart(2, "0")}`;
+
+    try {
+      await sbFetch(
+        `attendance_logs?work_date=gte.${encodeURIComponent(startDate)}&work_date=lte.${encodeURIComponent(endDate)}`,
+        { method: "DELETE" }
+      );
+      showStatus(`تم حذف سجلات شهر (${label}) بنجاح.`, true);
+      await loadAdminData();
+    } catch (err) {
+      showStatus("تعذر حذف سجلات الشهر: " + err.message, false);
+    }
+  }
+
+  function renderAdminMonths() {
+    const grid = document.getElementById("monthsGrid");
+    const summaryEl = document.getElementById("adminTotalSummary");
+    const downloadAllBtn = document.getElementById("downloadAllBtn");
+
+    summaryEl.textContent = `إجمالي السجلات المحفوظة: ${adminLogsCache.length} سجل (${estimateKb(adminLogsCache)})`;
+    downloadAllBtn.disabled = adminLogsCache.length === 0;
+
+    if (!adminLogsCache.length) {
+      grid.innerHTML = '<div class="section-box" style="grid-column: 1 / -1; text-align:center;">لا توجد سجلات حضور أو غياب في قاعدة البيانات حالياً.</div>';
+      return;
+    }
+
+    const grouped = {};
+    adminLogsCache.forEach(rec => {
+      const mKey = getMonthKey(rec.work_date) || "غير محدد";
+      if (!grouped[mKey]) grouped[mKey] = [];
+      grouped[mKey].push(rec);
+    });
+
+    const sortedMonths = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+    grid.innerHTML = sortedMonths.map(mKey => {
+      const list = grouped[mKey];
+      const label = formatMonthLabel(mKey);
+      return `
+        <div class="month-card">
+          <div class="month-card-title">${label}</div>
+          <div class="month-card-meta">عدد السجلات: ${list.length} سجل • الحجم التقريبي: ${estimateKb(list)}</div>
+          <div class="month-card-actions">
+            <button type="button" class="btn-primary sm-btn" onclick="downloadMonthExcel('${mKey}')">تحميل شيت الشهر</button>
+            <button type="button" class="btn-danger-outline sm-btn" onclick="deleteMonthLogs('${mKey}')">حذف الشهر</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function loadAdminData() {
+    try {
+      const [emps, logs] = await Promise.all([
+        sbFetch("employees?select=id,name"),
+        sbFetch("attendance_logs?select=*&order=work_date.desc,updated_at.desc")
+      ]);
+
+      adminEmployeesMap = {};
+      if (Array.isArray(emps)) {
+        emps.forEach(e => { adminEmployeesMap[e.id] = e.name; });
+      }
+      adminLogsCache = Array.isArray(logs) ? logs : [];
+      renderAdminMonths();
+    } catch (err) {
+      showStatus("خطأ أثناء تحميل بيانات لوحة المدير: " + err.message, false);
+    }
+  }
+
   function updateNetworkBadge() {
     const badge = document.getElementById("netBadge");
     if (navigator.onLine) {
@@ -1059,65 +1416,10 @@ function urlBase64ToUint8Array(base64String) {
   updateStageBadge(null);
   updateNetworkBadge();
   updateNotifyButtonLabel();
-  loadEmployees();
-  evaluateEveningReminder(false);
-  setInterval(() => evaluateEveningReminder(false), 60 * 1000);
-async function subscribeEmployeeToPush() {
-  // 1. التأكد من التحقق المسبق بالاسم والرمز السري
-  if (!verifiedEmployeeId) {
-    showStatus("يرجى اختيار اسمك وإدخال الرمز السري والضغط على (تحقق وتحميل السجل) أولاً.", false);
-    return;
-  }
-
-  // 2. التأكد من دعم المتصفح لـ Service Worker و PushManager
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    showStatus("المتصفح أو الجهاز لا يدعم إشعارات الخلفية.", false);
-    return;
-  }
-
-  // 3. طلب إذن الإشعارات من المستخدم
-  const permission = await Notification.requestPermission();
-  updateNotifyButtonLabel();
-  if (permission !== "granted") {
-    showStatus("لم يتم السماح بالإشعارات من الجهاز.", false);
-    return;
-  }
-
-  try {
-    // 4. الحصول على تسجيل Service Worker والاشتراك في خدمة الدفع
-    const registration = await navigator.serviceWorker.ready;
-    let subscription = await registration.pushManager.getSubscription();
-
-    if (!subscription) {
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
-    }
-
-    // 5. استخراج بيانات الاشتراك وحفظها (أو تحديثها) في جدول push_subscriptions
-    const subData = subscription.toJSON();
-    await sbFetch("push_subscriptions?on_conflict=employee_id,endpoint", {
-      method: "POST",
-      body: JSON.stringify({
-        employee_id: verifiedEmployeeId,
-        endpoint: subData.endpoint,
-        p256dh: subData.keys.p256dh,
-        auth: subData.keys.auth,
-        user_agent: navigator.userAgent,
-        is_active: true,
-        updated_at: new Date().toISOString()
-      })
-    });
-
-    showStatus("تم تفعيل تنبيهات الجهاز وربطها بحسابك بنجاح.", true);
-  } catch (err) {
-    showStatus("حدث خطأ أثناء حفظ اشتراك الإشعارات: " + err.message, false);
-  }
-}
-
-// ربط زر "تفعيل تنبيهات الجهاز" بالدالة
-document.getElementById("notifyBtn").onclick = subscribeEmployeeToPush;  
+  setInterval(() => {
+    syncLockedTodayDate();
+    evaluateEveningReminder(false);
+  }, 60 * 1000);
 </script>
 </body>
 </html>
